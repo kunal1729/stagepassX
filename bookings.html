@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class=" bg-[#FFFFFF] h-screen flex">
+        <div class="flex flex-col shadow-lg w-[25%] h-full border-r-1  gap-12 p-12">
+            <h1 class="text-black text-4xl font-bold">StagePassX</h1>
+            <nav class="flex flex-col gap-4">
+                <div class="flex gap-4 items-center">
+                    <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
+                     <a href="index.html" class="text-[#414A4C] text-lg font-semibold">Dashboard</a>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <img src="events.png" alt="bookings" class="w-8 h-8 rounded-full">
+                    <a href="bookings.html" class="text-[#414A4C] text-lg font-semibold">Events</a>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
+                    <a href="profile.html" class="text-[#414A4C] text-lg font-semibold">Profile</a>
+                </div> 
+                <div class="flex gap-4 items-center">
+                    <img src="settings.png" alt="logout" class="w-8 h-8 rounded-full">
+                    <a href="login.html" class="text-[#414A4C] text-lg font-semibold">Settings</a>  
+                </div> 
+                
+            </nav>
+        </div>
+        <div class="w-[65%] h-full">
+            <div class="flex w-full items-center justify-between">
+                <h1 class="text-black text-2xl font-bold p-12">Bookings</h1>
+                <button onclick= "openBookingForm()" class="bg-blue-400 font-semibold text-white p-2 rounded-lg hover:bg-blue-500">
+                + Add Booking
+                </button>
+            </div>
+            <div class="flex flex-col gap-4 p-12">
+                <h1 class="text-black text-xl font-bold">Upcoming Bookings</h1>
+                <table class="w-full">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="text-left p-4">Event</th>
+                            <th class="text-left p-4">Date</th>
+                            <th class="text-left p-4">Time</th>
+                            <th class="text-left p-4">Venue</th>
+                            <th class="text-left p-4">Status</th>
+                            <th class="text-left p-4">Action</th>
+                        </tr>
+                    </thead>
+                </table>
+                <tbody>
+
+                </tbody>
+        </div>
+    </div>
+    <script>
+    async function openBookingForm() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Add Booking',
+        html: `
+          <input id="customerName" class="swal2-input" placeholder="Customer Name">
+          <select id="roomType" class="swal2-input">
+            <option value="">Select Room Type</option>
+            <option value="single">Single</option>
+            <option value="double">Double</option>
+            <option value="suite">Suite</option>
+          </select>
+          <input id="checkIn" type="date" class="swal2-input" placeholder="Check-in Date">
+          <input id="checkOut" type="date" class="swal2-input" placeholder="Check-out Date">
+        `,
+        confirmButtonText: 'Save Booking',
+        focusConfirm: false,
+        showCancelButton: true,
+        preConfirm: () => {
+          const customerName = document.getElementById('customerName').value.trim();
+          const roomType = document.getElementById('roomType').value;
+          const checkIn = document.getElementById('checkIn').value;
+          const checkOut = document.getElementById('checkOut').value;
+
+          if (!customerName || !roomType || !checkIn || !checkOut) {
+            Swal.showValidationMessage('Please fill all fields');
+            return false;
+          }
+
+          return { customerName, roomType, checkIn, checkOut };
+        }
+      });
+
+      if (formValues) {
+        Swal.fire({
+          title: 'Booking Added!',
+          html: `
+            <b>${formValues.customerName}</b> booked a <b>${formValues.roomType}</b> room.<br>
+            <b>Check-in:</b> ${formValues.checkIn}<br>
+            <b>Check-out:</b> ${formValues.checkOut}
+          `,
+          icon: 'success'
+        });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Login Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div class="p-12 bg-[#28282B] h-screen">
@@ -15,16 +16,56 @@
             <div class="flex w-full gap-12 justify-center items-center flex flex-col h-full">
                 <h1 class="text-white text-4xl font-bold">LOGIN</h1>
                 <p class="text-white text-lg">Please enter your credentials</p>
-                <form action="#" class="w-[50%]">
+                <form id="loginForm" action="#" class="w-[50%]">
                     <div class="flex flex-col gap-12">
                         <div  class="flex flex-col gap-4">
-                            <input type="text" placeholder="Email" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full hover:text-white ">
-                            <input type="password" placeholder="Password" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full hover:text-white">
+                            <input id="usernameOrEmail" type="text" placeholder="Email" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full text-white ">
+                            <input id="password" type="password" placeholder="Password" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full text-white">
                         </div>
                         <button type="submit" class="bg-white text-black px-4 py-2 rounded-full hover:bg-black hover:text-white">Login</button>
                     </div>
                 </form>
             </div>
+            
     </div>
+    <script>
+        const form = document.querySelector('#loginForm');
+        const message = document.querySelector('#message');
+        form.addEventListener('submit', async(event) => {
+            event.preventDefault();
+            const userData = {
+                usernameOrEmail: document.getElementById("usernameOrEmail").value.trim(),
+                password: document.getElementById("password").value.trim(),
+            };
+            console.log(userData);
+            await axios.post(
+            "http://localhost:9090/users/login",
+            null,
+            {
+                params: {
+                usernameOrEmail: userData.usernameOrEmail,
+                password: userData.password
+                }
+            }
+            )
+            .then(response => {
+                console.log(response.data);
+                localStorage.setItem('role', response.data.role);
+                if(response.data.role === 'CUSTOMER')
+                {
+                    window.location.href = 'bookings.html';
+                }
+                else if(response.data.role === 'ORGANIZER')
+                {
+                    window.location.href = 'organizer.html';
+                }
+                // window.location.href = 'index.html';
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        });
+
+    </script>
 </body>
 </html>

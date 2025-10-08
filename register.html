@@ -61,19 +61,16 @@
 
         try {
           const response = await axios.post(
-            ,
+            "http://localhost:9090/users/register",
             userData
           );
 
           console.log("✅ Registration Success:", response.data);
-          message.textContent = "✅ Registration successful! Redirecting...";
-          message.classList.remove("text-red-600");
-          message.classList.add("text-green-600");
+          
+          window.location.href = "login.html";
 
-          setTimeout(() => {
-            window.location.href = "/login.html";
-          }, 1500);
-        }.catch (error) {
+        }
+        catch (error) {
           console.error("❌ Registration Error:", error);
           message.textContent = "❌ Registration failed. Please try again.";
           message.classList.remove("text-green-600");
