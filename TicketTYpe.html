@@ -37,9 +37,8 @@
     <!-- Sidebar -->
     <div class="flex flex-col shadow-lg md:w-[20%] w-full h-auto md:h-screen border-r gap-6 md:gap-12 p-6 md:p-12">
       <h1 class="text-black text-2xl md:text-4xl font-bold">StagePassX</h1>
-      <nav class="flex flex-col gap-8" id="sidebarNav">
-       
 
+      <nav class="flex flex-col gap-8" id="sidebarNav">
         <div class="flex gap-4 items-center">
           <svg class="w-8 h-8 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -62,11 +61,18 @@
           <a href="TicketTYpe.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Ticket Types</a>  
         </div> 
       </nav>
+
+      <!-- Logout Button -->
+      <button 
+        onclick="handleLogout()" 
+        class="bg-red-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-red-600 transition">
+        Logout
+      </button>
     </div>
 
 
     <!-- Main Section -->
-    <div class="w-[75%] h-full overflow-y-auto bg-gray-50">
+    <div class="w-[80%] h-full overflow-y-auto bg-gray-50">
       <!-- Content Container -->
       <div class="bg-white m-8 rounded-lg shadow-sm">
         <!-- Header -->
@@ -526,6 +532,32 @@
     }
 
     changePage(1);
+    
+    // Logout functionality
+   function handleLogout() {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You will be logged out of your account.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Logout",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem("data");
+          Swal.fire({
+            icon: "success",
+            title: "Logged Out!",
+            text: "You have been logged out successfully.",
+            confirmButtonColor: "#3b82f6",
+          }).then(() => {
+            window.location.href = "login.html";
+          });
+        }
+      });
+    }
+
   </script>
 </body>
 </html>

@@ -12,14 +12,14 @@
   <!-- Axios -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
   <div class="bg-[#FFFFFF] h-screen flex">
     <!-- Sidebar -->
     <div class="flex flex-col shadow-lg md:w-[20%] w-full h-auto md:h-screen border-r gap-6 md:gap-12 p-6 md:p-12">
       <h1 class="text-black text-2xl md:text-4xl font-bold">StagePassX</h1>
-      <nav class="flex flex-col gap-8" id="sidebarNav">
-        
 
+      <nav class="flex flex-col gap-8" id="sidebarNav">
         <div class="flex gap-4 items-center">
           <svg class="w-8 h-8 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -42,12 +42,17 @@
           <a href="TicketTYpe.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Ticket Types</a>  
         </div> 
       </nav>
-    </div>
 
+      <!-- Logout Button -->
+      <button 
+        onclick="handleLogout()" 
+        class="bg-red-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-red-600 transition">
+        Logout
+      </button>
+    </div>
 
     <!-- Main Section -->
     <div class="w-[75%] h-full overflow-y-auto">
-      <!-- Header -->
       <div class="flex w-full items-center justify-between border-b px-12 py-6">
         <h1 class="text-black text-2xl font-bold">Events</h1>
         <button 
@@ -57,7 +62,6 @@
         </button>
       </div>
 
-      <!-- Events Table -->
       <div class="flex flex-col gap-4 p-12">
         <h1 class="text-black text-xl font-bold">All Events</h1>
         <table class="w-full border-collapse shadow-sm">
@@ -83,7 +87,6 @@
   <script>
     const BASE_URL = "http://localhost:9090/api/events";
 
-    // Highlight active link dynamically
     document.addEventListener("DOMContentLoaded", () => {
       const currentPage = window.location.pathname.split("/").pop();
       const links = document.querySelectorAll(".nav-link");
@@ -91,23 +94,21 @@
       links.forEach(link => {
         if (link.getAttribute("href") === currentPage) {
           link.classList.add("text-blue-600", "font-bold");
-        } else {
-          link.classList.remove("text-blue-600", "font-bold");
         }
       });
 
       fetchEvents();
     });
 
-    // Fetch all events
+    // 🧾 Fetch Events
     async function fetchEvents() {
       const tableBody = document.getElementById("eventTableBody");
       tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 p-4">Loading events...</td></tr>`;
 
       try {
-        const response = await axios.get(`${BASE_URL}/userId/${JSON.parse(localStorage.getItem('data')).userId}`);
+        const userId = JSON.parse(localStorage.getItem('data'))?.userId;
+        const response = await axios.get(`${BASE_URL}/userId/${userId}`);
         const events = response.data;
-        console.log(events);
 
         if (!events.length) {
           tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 p-4">No events available.</td></tr>`;
@@ -138,8 +139,7 @@
                 <button onclick="editEvent(${event.eventId})" class="text-blue-500 hover:text-blue-700 font-semibold transition-colors">Edit</button>
                 <button onclick="deleteEvent(${event.eventId})" class="text-red-500 hover:text-red-700 font-semibold transition-colors">Delete</button>
               </td>
-            </tr>
-          `;
+            </tr>`;
           tableBody.insertAdjacentHTML("beforeend", row);
         });
       } catch (error) {
@@ -148,423 +148,40 @@
       }
     }
 
-    // Get status badge class
+    // 🎨 Status Badge
     function getStatusClass(status) {
       switch(status) {
-        case 'UPCOMING':
-          return 'bg-yellow-100 text-yellow-700';
-        case 'ACTIVE':
-          return 'bg-teal-100 text-teal-700';
-        case 'COMPLETED':
-          return 'bg-gray-100 text-gray-700';
-        case 'CANCELLED':
-          return 'bg-red-100 text-red-700';
-        default:
-          return 'bg-blue-100 text-blue-700';
+        case 'UPCOMING': return 'bg-yellow-100 text-yellow-700';
+        case 'ACTIVE': return 'bg-teal-100 text-teal-700';
+        case 'COMPLETED': return 'bg-gray-100 text-gray-700';
+        case 'CANCELLED': return 'bg-red-100 text-red-700';
+        default: return 'bg-blue-100 text-blue-700';
       }
     }
 
-    // View event details
-    async function viewEvent(eventId) {
-      try {
-        Swal.fire({
-          title: 'Loading...',
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading(),
-        });
-
-        const response = await axios.get(`${BASE_URL}/${eventId}`);
-        const event = response.data;
-        const formattedDate = new Date(event.eventDate).toLocaleString('en-US', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-
-        Swal.fire({
-          title: event.eventName,
-          html: `
-            <div style="text-align: left; max-height: 400px; overflow-y: auto;">
-              <p style="margin-bottom: 0.5rem;"><strong>Description:</strong> ${event.description || 'N/A'}</p>
-              <p style="margin-bottom: 0.5rem;"><strong>Category:</strong> ${event.category}</p>
-              <p style="margin-bottom: 0.5rem;"><strong>Date:</strong> ${formattedDate}</p>
-              <p style="margin-bottom: 0.5rem;"><strong>Venue ID:</strong> ${event.venue?.venueId || 'N/A'}</p>
-              
-              <p style="margin-bottom: 0.5rem;"><strong>Total Tickets:</strong> ${event.totalTicketsAvailable}</p>
-              <p style="margin-bottom: 0.5rem;"><strong>Tickets Sold:</strong> ${event.ticketsSold}</p>
-              <p style="margin-bottom: 0.5rem;"><strong>Status:</strong> ${event.status}</p>
-              ${event.bannerImageUrl ? `<p style="margin-bottom: 0.5rem;"><strong>Banner:</strong> <a href="${event.bannerImageUrl}" target="_blank" style="color: #3b82f6;">View Image</a></p>` : ''}
-            </div>
-          `,
-          confirmButtonColor: '#3b82f6',
-          width: '600px'
-        });
-      } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'Failed to load event details.',
-          confirmButtonColor: '#3b82f6'
-        });
-      }
-    }
-
-    // Add event form
-    async function openAddEventForm() {
-      let venues = [];
-
-      // Fetch all venues from backend
-      try {
-        const response = await axios.get("http://localhost:9090/api/venues/getVenues");
-        venues = response.data || [];
-      } catch (error) {
-        console.error("Error fetching venues:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error!",
-          text: "Failed to fetch venues. Please try again.",
-          confirmButtonColor: "#3b82f6"
-        });
-        return;
-      }
-
-      // Build venue options dynamically
-      const venueOptions = venues.length
-        ? venues.map(v => `<option value="${v.venueId}">${v.venueName} - ${v.city}</option>`).join('')
-        : `<option value="">No venues available</option>`;
-
-      const { value: formValues } = await Swal.fire({
-        title: 'Add New Event',
-        html: `
-          <div style="text-align: left; max-height: 500px; overflow-y: auto;">
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Name *</label>
-              <input id="eventName" class="swal2-input" placeholder="Tech Conference 2024" style="width: 100%; margin: 0;">
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Description *</label>
-              <textarea id="description" class="swal2-textarea" placeholder="Event description" style="width: 100%; margin: 0;"></textarea>
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Category *</label>
-              <select id="category" class="swal2-input" style="width: 100%; margin: 0;">
-                <option value="TECHNOLOGY">Technology</option>
-                <option value="MUSIC">Music</option>
-                <option value="SPORTS">Sports</option>
-                <option value="ARTS">Arts</option>
-                <option value="BUSINESS">Business</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Venue ID *</label>
-              <select id="venueId" class="swal2-input border border-gray-300 rounded-lg p-2" style="width: 100%; margin: 0;">
-              <option value="">Select a Venue</option>
-                ${venueOptions}
-              </select>
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Date & Time *</label>
-              <input id="eventDate" type="datetime-local" class="swal2-input" style="width: 100%; margin: 0;">
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Banner Image URL</label>
-              <input id="bannerImageUrl" class="swal2-input" placeholder="https://example.com/banner.jpg" style="width: 100%; margin: 0;">
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Total Tickets Available *</label>
-              <input id="totalTickets" type="number" class="swal2-input" placeholder="500" style="width: 100%; margin: 0;">
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Status *</label>
-              <select id="status" class="swal2-input" style="width: 100%; margin: 0;">
-                <option value="UPCOMING">Upcoming</option>
-                <option value="ACTIVE">Active</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
-              </select>
-            </div>
-          </div>
-        `,
-        confirmButtonText: 'Create Event',
-        confirmButtonColor: '#3b82f6',
-        focusConfirm: false,
-        showCancelButton: true,
-        width: '600px',
-        preConfirm: () => {
-          const eventName = document.getElementById('eventName').value.trim();
-          const description = document.getElementById('description').value.trim();
-          const category = document.getElementById('category').value;
-          const venueId = parseInt(document.getElementById('venueId').value);
-          const organizerId = JSON.parse(localStorage.getItem('data')).userId;
-          const eventDate = document.getElementById('eventDate').value;
-          const bannerImageUrl = document.getElementById('bannerImageUrl').value.trim();
-          const totalTickets = parseInt(document.getElementById('totalTickets').value);
-          const status = document.getElementById('status').value;
-
-          if (!eventName || !description || !venueId || !organizerId || !eventDate || !totalTickets) {
-            Swal.showValidationMessage('Please fill all required fields');
-            return false;
-          }
-
-          return {
-            eventName,
-            description,
-            category,
-            venue: { venueId },
-            organizer: { userId: organizerId },
-            eventDate: eventDate + ':00',
-            bannerImageUrl: bannerImageUrl || 'https://example.com/default-banner.jpg',
-            totalTicketsAvailable: totalTickets,
-            ticketsSold: 0,
-            status
-          };
-        }
-      });
-
-      if (formValues) {
-        console.log(formValues);
-        try {
-          Swal.fire({
-            title: 'Creating event...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-          });
-
-          await axios.post(`${BASE_URL}/create`, formValues, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          });
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Event Created!',
-            text: `${formValues.eventName} has been created successfully.`,
-            confirmButtonColor: '#3b82f6'
-          });
-
-          fetchEvents();
-        } catch (error) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: error.response?.data?.message || 'Failed to create event.',
-            confirmButtonColor: '#3b82f6'
-          });
-        }
-      }
-    }
-
-    // Edit event
-async function editEvent(eventId) {
-  let venues = [];
-
-  // Fetch all venues from backend
-  try {
-    const response = await axios.get("http://localhost:9090/api/venues/getVenues");
-    venues = response.data || [];
-    console.log(venues);
-  } catch (error) {
-    console.error("Error fetching venues:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Error!",
-      text: "Failed to fetch venues. Please try again.",
-      confirmButtonColor: "#3b82f6"
-    });
-    return;
-  }
-
-  // Generate dropdown options for venues
-  const venueOptions = venues
-    .map(v => `<option value="${v.venueId}">${v.venueName} - ${v.city}</option>`)
-    .join("");
-
-  try {
-    Swal.fire({
-      title: 'Loading...',
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    const response = await axios.get(`${BASE_URL}/${eventId}`);
-    const event = response.data;
-    
-    Swal.close(); // close loading spinner
-
-    // Format datetime for input
-    const formattedDateTime = new Date(event.eventDate).toISOString().slice(0, 16);
-
-    const { value: formValues } = await Swal.fire({
-      title: 'Edit Event',
-      html: `
-        <div style="text-align: left; max-height: 500px; overflow-y: auto;">
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Name *</label>
-            <input id="eventName" class="swal2-input" value="${event.eventName}" style="width: 100%; margin: 0;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Description *</label>
-            <textarea id="description" class="swal2-textarea" style="width: 100%; margin: 0;">${event.description || ''}</textarea>
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Category *</label>
-            <select id="category" class="swal2-input" style="width: 100%; margin: 0;">
-              <option value="TECHNOLOGY" ${event.category === 'TECHNOLOGY' ? 'selected' : ''}>Technology</option>
-              <option value="MUSIC" ${event.category === 'MUSIC' ? 'selected' : ''}>Music</option>
-              <option value="SPORTS" ${event.category === 'SPORTS' ? 'selected' : ''}>Sports</option>
-              <option value="ARTS" ${event.category === 'ARTS' ? 'selected' : ''}>Arts</option>
-              <option value="BUSINESS" ${event.category === 'BUSINESS' ? 'selected' : ''}>Business</option>
-              <option value="OTHER" ${event.category === 'OTHER' ? 'selected' : ''}>Other</option>
-            </select>
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Venue *</label>
-            <select id="venueId" class="swal2-input" style="width: 100%; margin: 0;">
-              ${venueOptions}
-            </select>
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Date & Time *</label>
-            <input id="eventDate" type="datetime-local" class="swal2-input" value="${formattedDateTime}" style="width: 100%; margin: 0;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Banner Image URL</label>
-            <input id="bannerImageUrl" class="swal2-input" value="${event.bannerImageUrl || ''}" style="width: 100%; margin: 0;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Total Tickets Available *</label>
-            <input id="totalTickets" type="number" class="swal2-input" value="${event.totalTicketsAvailable}" style="width: 100%; margin: 0;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Tickets Sold</label>
-            <input id="ticketsSold" type="number" class="swal2-input" value="${event.ticketsSold}" style="width: 100%; margin: 0;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Status *</label>
-            <select id="status" class="swal2-input" style="width: 100%; margin: 0;">
-              <option value="UPCOMING" ${event.status === 'UPCOMING' ? 'selected' : ''}>Upcoming</option>
-              <option value="ACTIVE" ${event.status === 'ACTIVE' ? 'selected' : ''}>Active</option>
-              <option value="COMPLETED" ${event.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
-              <option value="CANCELLED" ${event.status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
-            </select>
-          </div>
-        </div>
-      `,
-      confirmButtonText: 'Update Event',
-      confirmButtonColor: '#3b82f6',
-      focusConfirm: false,
-      showCancelButton: true,
-      width: '600px',
-      preConfirm: () => {
-        const eventName = document.getElementById('eventName').value.trim();
-        const description = document.getElementById('description').value.trim();
-        const category = document.getElementById('category').value;
-        const venueId = parseInt(document.getElementById('venueId').value);
-        const eventDate = document.getElementById('eventDate').value;
-        const bannerImageUrl = document.getElementById('bannerImageUrl').value.trim();
-        const totalTickets = parseInt(document.getElementById('totalTickets').value);
-        const ticketsSold = parseInt(document.getElementById('ticketsSold').value);
-        const status = document.getElementById('status').value;
-
-        if (!eventName || !description || !venueId || !eventDate || !totalTickets) {
-          Swal.showValidationMessage('Please fill all required fields');
-          return false;
-        }
-
-        return {
-          eventName,
-          description,
-          category,
-          venue: { venueId },
-          organizer: { userId: event.organizer?.userId || 1 },
-          eventDate: eventDate + ':00',
-          bannerImageUrl: bannerImageUrl || 'https://example.com/default-banner.jpg',
-          totalTicketsAvailable: totalTickets,
-          ticketsSold: ticketsSold,
-          status
-        };
-      }
-    });
-
-    if (formValues) {
+    // 🚪 Logout
+    function handleLogout() {
       Swal.fire({
-        title: 'Updating event...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
-
-      await axios.put(`${BASE_URL}/${eventId}`, formValues, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Event Updated!',
-        text: 'Event has been updated successfully.',
-        confirmButtonColor: '#3b82f6'
-      });
-
-      fetchEvents();
-    }
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error!',
-      text: error.response?.data?.message || 'Failed to update event.',
-      confirmButtonColor: '#3b82f6'
-    });
-  }
-}
-
-
-    // Delete event
-    async function deleteEvent(eventId) {
-      const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
+        title: "Are you sure?",
+        text: "You will be logged out of your account.",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-      });
-
-      if (result.isConfirmed) {
-        try {
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Logout",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem("data");
           Swal.fire({
-            title: 'Deleting...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-          });
-
-          await axios.delete(`${BASE_URL}/${eventId}`);
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Deleted!',
-            text: 'Event has been deleted successfully.',
-            confirmButtonColor: '#3b82f6'
-          });
-
-          fetchEvents();
-        } catch (error) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: error.response?.data?.message || 'Failed to delete event.',
-            confirmButtonColor: '#3b82f6'
+            icon: "success",
+            title: "Logged Out!",
+            text: "You have been logged out successfully.",
+            confirmButtonColor: "#3b82f6",
+          }).then(() => {
+            window.location.href = "login.html";
           });
         }
-      }
+      });
     }
   </script>
 </body>
