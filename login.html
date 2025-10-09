@@ -6,73 +6,159 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Login Page</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .bg-pattern {
+            background-image: 
+                linear-gradient(rgba(40, 40, 43, 0.85), rgba(40, 40, 43, 0.85)),
+                url('https://plus.unsplash.com/premium_photo-1661315459644-18297c559777?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGV2ZW50fGVufDB8fDB8fHww');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
 </head>
 <body>
-    <div class="p-12 bg-[#28282B] h-screen">
-            <nav class="flex justify-between">
-                <h1 class="text-white text-2xl font-bold">StagePassX</h1>
-                
-            </nav>
-            <div class="flex w-full gap-12 justify-center items-center flex flex-col h-full">
-                <h1 class="text-white text-4xl font-bold">LOGIN</h1>
-                <p class="text-white text-lg">Please enter your credentials</p>
-                <form id="loginForm" action="#" class="w-[50%]">
-                    <div class="flex flex-col gap-12">
-                        <div  class="flex flex-col gap-4">
-                            <input id="usernameOrEmail" type="text" placeholder="Email" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full text-white ">
-                            <input id="password" type="password" placeholder="Password" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full text-white">
+    <div class="p-12 bg-pattern h-screen">
+        <nav class="flex justify-between">
+            <a href="index.html" class="text-white text-2xl font-bold hover:text-gray-300 cursor-pointer">StagePassX</a>
+        </nav>
+        <div class="flex w-full gap-12 justify-center items-center flex flex-col h-full">
+            <h1 class="text-white text-4xl font-bold">LOGIN</h1>
+            <p class="text-white text-lg">Please enter your credentials</p>
+            <form id="loginForm" action="#" class="w-[50%]">
+                <div class="flex flex-col gap-12">
+                    <div class="flex flex-col gap-4">
+                        <div>
+                            <input id="usernameOrEmail" type="text" placeholder="Username, Email or Mobile" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full text-white w-full">
+                            <p id="usernameError" class="text-red-400 text-sm mt-2 ml-4 hidden"></p>
                         </div>
-                        <button type="submit" class="bg-white text-black px-4 py-2 rounded-full hover:bg-black hover:text-white">Login</button>
+                        <div>
+                            <input id="password" type="password" placeholder="Password" class="bg-transparent focus:outline-none border border-white px-4 py-2 rounded-full text-white w-full">
+                            <p id="passwordError" class="text-red-400 text-sm mt-2 ml-4 hidden"></p>
+                        </div>
                     </div>
-                </form>
-            </div>
-            
+                    <div id="generalError" class="text-red-400 text-center hidden"></div>
+                    <button type="submit" class="bg-white text-black px-4 py-2 rounded-full hover:bg-black hover:text-white">Login</button>
+                    <p class="text-white text-sm text-center">Don't have an account? <a href="register.html" class="text-blue-400 hover:text-blue-300 underline">Register here</a></p>
+                </div>
+            </form>
+        </div>
     </div>
     <script>
         const form = document.querySelector('#loginForm');
-        const message = document.querySelector('#message');
-        form.addEventListener('submit', async (event) => {
-    event.preventDefault(); // prevent default form submission
-
-    const userData = {
-        usernameOrEmail: document.getElementById("usernameOrEmail").value.trim(),
-        password: document.getElementById("password").value.trim(),
-    };
-    console.log(userData);
-
-    try {
-        const response = await axios.post(
-            "http://localhost:9090/users/login",
-            null,
-            {
-                params: {
-                    usernameOrEmail: userData.usernameOrEmail,
-                    password: userData.password
-                }
-            }
-        );
-
-        console.log(response.data);
         
-        localStorage.setItem('data', JSON.stringify(response.data));
-
-        if (response.data.role === 'CUSTOMER') {
-            window.location.href = 'bookings.html';
-        } else if (response.data.role === 'ORGANIZER') {
-            window.location.href = 'yourEvents.html';
+        // Validation functions
+        function validateUsername(username) {
+            // Username: 3-20 characters, alphanumeric and underscore only
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            return usernameRegex.test(username);
         }
 
-    } catch (error) {
-        console.error(error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Login Failed',
-            text: error.response?.data?.message || 'Please check your credentials'
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function validateMobile(mobile) {
+            // Mobile: 10 digits
+            const mobileRegex = /^[0-9]{10}$/;
+            return mobileRegex.test(mobile);
+        }
+
+        function validatePassword(password) {
+            // Password: minimum 8 characters, at least one uppercase, one lowercase, one number, one special character
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+            return passwordRegex.test(password);
+        }
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.classList.add('hidden');
+        }
+
+        function hideAllErrors() {
+            hideError('usernameError');
+            hideError('passwordError');
+            hideError('generalError');
+        }
+
+        form.addEventListener('submit', async(event) => {
+            event.preventDefault();
+            hideAllErrors();
+
+            const usernameOrEmail = document.getElementById("usernameOrEmail").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            let isValid = true;
+
+            // Validate username/email/mobile
+            if (!usernameOrEmail) {
+                showError('usernameError', 'This field is required');
+                isValid = false;
+            } else {
+                const isValidUsername = validateUsername(usernameOrEmail);
+                const isValidEmail = validateEmail(usernameOrEmail);
+                const isValidMobile = validateMobile(usernameOrEmail);
+
+                if (!isValidUsername && !isValidEmail && !isValidMobile) {
+                    showError('usernameError', 'Invalid format. Enter a valid username (3-20 characters, alphanumeric), email, or 10-digit mobile number');
+                    isValid = false;
+                }
+            }
+
+            // Validate password
+            if (!password) {
+                showError('passwordError', 'Password is required');
+                isValid = false;
+            } else if (!validatePassword(password)) {
+                showError('passwordError', 'Password must be at least 8 characters with uppercase, lowercase, number, and special character (@$!%*?&#)');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            // If validation passes, proceed with API call
+            try {
+                const response = await axios.post(
+                    "http://localhost:9090/users/login",
+                    null,
+                    {
+                        params: {
+                            usernameOrEmail: usernameOrEmail,
+                            password: password
+                        }
+                    }
+                );
+
+                console.log(response.data);
+                localStorage.setItem('data', JSON.stringify(response.data));
+                // Get role from response
+                const userRole = response.data.role;
+                
+                if(userRole === 'CUSTOMER') {
+                    window.location.href = 'bookings.html';
+                } else if(userRole === 'ORGANIZER') {
+                    window.location.href = 'yourEvents.html';
+                } else if(userRole === 'ADMIN') {
+                    window.location.href = 'admin.html';
+                }
+            } catch(error) {
+                console.log(error);
+                if (error.response) {
+                    showError('generalError', error.response.data.message || 'Login failed. Please check your credentials.');
+                } else {
+                    showError('generalError', 'Connection error. Please try again.');
+                }
+            }
         });
-    }
-});
-
-
     </script>
 </body>
 </html>

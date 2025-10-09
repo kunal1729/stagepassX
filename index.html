@@ -3,25 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>StagePassX - Event Management Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-pattern {
+            background-image: 
+                linear-gradient(rgba(40, 40, 43, 0.85), rgba(40, 40, 43, 0.85)),
+                url('https://plus.unsplash.com/premium_photo-1683129651802-1c7ba429a137?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #28282B;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+        
+        .close:hover {
+            color: #ccc;
+        }
+    </style>
 </head>
 <body>
-    <div class="p-12 bg-[#28282B] h-screen">
-            <nav class="flex justify-between">
-                <h1 class="text-white text-2xl font-bold">StagePassX</h1>
-                <div class="flex items-center space-x-4">
-                    <a href="login.html" class="text-white border border-white px-4 py-2 rounded-full hover:bg-white hover:text-black">Login</a>
-                    <a href="register.html" class="text-white border border-white px-4 py-2 rounded-full hover:bg-white hover:text-black">Sign Up</a>
-                </div>
-            </nav>
-            <div class="flex justify-center items-center flex flex-col h-full">
-                <div class=" w-[70%] font-bold text-4xl w-full gap-4 text-center h-full flex flex-col justify-center items-center">
-                    <h1 class="text-white text-4xl w-[70%] font-bold">Discover and Book events now !</h1>
-                    <span class="text-white text-lg w-[50%] mt-4 text-[#414A4C]">Activities for the whole family on our site </span>
-                </div>
-                <button class="border-white border border-1 text-white px-6 py-3 rounded-full font-sm hover:bg-white hover:text-black mb-8">Get Started</button>
+    <div class="p-12 bg-pattern min-h-screen">
+        <nav class="flex justify-between">
+            <h1 class="text-white text-2xl font-bold">StagePassX</h1>
+            <div class="flex items-center space-x-4">
+                <a href="login.html" class="text-white border border-white px-4 py-2 rounded-full hover:bg-white hover:text-black transition-colors">Login</a>
+                <a href="register.html" class="text-white border border-white px-4 py-2 rounded-full hover:bg-white hover:text-black transition-colors">Sign Up</a>
             </div>
+        </nav>
+        <div class="flex justify-center items-center flex flex-col h-full gap-4 min-h-[80vh]">
+            <div class="w-[70%] font-bold text-4xl w-full gap-4 text-center h-full flex flex-col justify-center items-center">
+                <h1 class="text-white text-5xl md:text-6xl w-[90%] md:w-[70%] font-bold leading-tight">Discover and Book Events Now!</h1>
+                <span class="text-white text-lg md:text-xl w-[90%] md:w-[50%] mt-4 text-gray-300">Turn Moments into Memories</span>
+            </div>
+            <button id="readMoreBtn" class="border-white border text-white px-8 py-3 rounded-full font-medium hover:bg-white hover:text-black mb-8 transition-all hover:scale-105">
+                Read More
+            </button>
+        </div>
     </div>
+
+    <!-- Modal -->
+    <div id="readMoreModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2 class="text-white text-3xl font-bold mb-6">About StagePassX</h2>
+            <div class="text-gray-300 text-base leading-relaxed space-y-4">
+                <p>
+                    <strong class="text-white">StagePassX</strong> is a comprehensive ticket booking and event management system designed to revolutionize how events are organized and experienced. Our platform bridges the gap between event organizers and attendees, creating a seamless ecosystem for discovering, booking, and managing events of all types and sizes.
+                </p>
+                
+                <h3 class="text-white text-xl font-semibold mt-6 mb-3">For Event Organizers</h3>
+                <p>
+                    Our platform empowers organizers with powerful tools to list and promote their events, manage complex seating arrangements and dynamic pricing strategies, and gain valuable insights through comprehensive analytics. Whether you're hosting intimate workshops, corporate conferences, or large-scale concerts, StagePassX provides the infrastructure you need to succeed.
+                </p>
+                
+                <h3 class="text-white text-xl font-semibold mt-6 mb-3">For Attendees</h3>
+                <p>
+                    Discover events that match your interests with our intuitive search and recommendation system. Book tickets securely with multiple payment options, receive instant confirmations, and manage all your bookings from one convenient dashboard. From music festivals to business seminars, sports events to cultural celebrations—find it all on StagePassX.
+                </p>
+                
+                <h3 class="text-white text-xl font-semibold mt-6 mb-3">Key Features</h3>
+                <ul class="list-none space-y-2 ml-4">
+                    <li>✓ Secure payment processing and booking management</li>
+                    <li>✓ Real-time seat availability and interactive venue maps</li>
+                    <li>✓ Comprehensive attendee tracking and check-in systems</li>
+                    <li>✓ Automated email notifications and digital tickets</li>
+                    <li>✓ Detailed analytics and reporting for organizers</li>
+                    <li>✓ Mobile-responsive design for booking on-the-go</li>
+                </ul>
+                
+                <p class="mt-6">
+                    Join thousands of organizers and attendees who trust StagePassX to deliver exceptional event experiences. Whether you're planning your next event or looking for exciting activities, we're here to make every moment memorable.
+                </p>
+                
+                <div class="flex gap-4 mt-8">
+                    <a href="register.html" class="flex-1 text-center bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-200 transition-colors">
+                        Get Started
+                    </a>
+                    <button id="closeModalBtn" class="flex-1 border border-white text-white px-6 py-3 rounded-full font-medium hover:bg-white hover:text-black transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('readMoreModal');
+        const btn = document.getElementById('readMoreBtn');
+        const closeBtn = document.getElementById('closeModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        btn.onclick = function() {
+            modal.classList.add('active');
+        }
+
+        closeBtn.onclick = function() {
+            modal.classList.remove('active');
+        }
+
+        closeModalBtn.onclick = function() {
+            modal.classList.remove('active');
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.classList.remove('active');
+            }
+        }
+    </script>
 </body>
 </html>
