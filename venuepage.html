@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,10 +17,10 @@
 <body>
   <div class="bg-[#FFFFFF] h-screen flex">
     <!-- Sidebar -->
-    <div class="flex flex-col shadow-lg md:w-[20%] w-full h-auto md:h-screen border-r gap-6 md:gap-12 p-6 md:p-12">
-      <h1 class="text-black text-2xl md:text-4xl font-bold">StagePassX</h1>
+    <div class="flex flex-col shadow-lg w-[20%] h-full border-r gap-12 p-12">
+      <h1 class="text-black text-4xl font-bold">StagePassX</h1>
       <nav class="flex flex-col gap-8" id="sidebarNav">
-        
+
         <div class="flex gap-4 items-center">
           <svg class="w-8 h-8 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -42,7 +44,6 @@
         </div> 
       </nav>
     </div>
-
 
     <!-- Main Section -->
     <div class="w-[80%] h-full overflow-y-auto bg-gray-50">
@@ -118,7 +119,6 @@
         }
       });
 
-      // Load venues
       fetchVenues();
     });
 
@@ -130,7 +130,6 @@
       try {
         const response = await axios.get(`${BASE_URL}/getVenues`);
         allVenues = response.data;
-        console.log(allVenues);
 
         if (!allVenues.length) {
           tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 p-8">No venues available.</td></tr>`;
@@ -144,16 +143,17 @@
       }
     }
 
-    // Render venues in table
+    // Render venues in table - Handle both address and venueAddress
     function renderVenues() {
       const tableBody = document.getElementById("venueTableBody");
       tableBody.innerHTML = "";
 
       allVenues.forEach(venue => {
+        const address = venue.venueAddress || venue.address || 'N/A';
         const row = `
           <tr class="border-b hover:bg-gray-50 transition-colors">
             <td class="p-4 text-[#414A4C]">${venue.venueName || 'N/A'}</td>
-            <td class="p-4 text-[#414A4C]">${venue.venueAddress || 'N/A'}</td>
+            <td class="p-4 text-[#414A4C]">${address}</td>
             <td class="p-4 text-[#414A4C]">${venue.city || 'N/A'}</td>
             <td class="p-4 text-[#414A4C]">${venue.totalCapacity || 0}</td>
             <td class="p-4 flex gap-4">
@@ -166,7 +166,7 @@
       });
     }
 
-    // Add new venue
+    // Add new venue - IMPORTANT: Uses "address" in request body
     async function openAddVenueForm() {
       const { value: formValues } = await Swal.fire({
         title: 'Add Venue',
@@ -198,15 +198,16 @@
         padding: '2rem',
         preConfirm: () => {
           const venueName = document.getElementById('venueName').value.trim();
-          const venueAddress = document.getElementById('venueAddress').value.trim();
+          const address = document.getElementById('venueAddress').value.trim();
           const city = document.getElementById('venueCity').value.trim();
           const totalCapacity = parseInt(document.getElementById('venueCapacity').value);
 
-          if (!venueName || !venueAddress || !city || !totalCapacity) {
+          if (!venueName || !address || !city || !totalCapacity) {
             Swal.showValidationMessage('Please fill all required fields');
             return false;
           }
-          return { venueName, venueAddress, city, totalCapacity };
+          // IMPORTANT: Send "address" not "venueAddress" per Postman
+          return { venueName, address, city, totalCapacity };
         }
       });
 
@@ -218,7 +219,8 @@
             didOpen: () => Swal.showLoading(),
           });
 
-          await axios.post(`${BASE_URL}/createVenue`, formValues, {
+          // IMPORTANT: POST to /createVenue (no /api/venues prefix)
+          await axios.post(`http://localhost:9090/api/venues/createVenue`, formValues, {
             headers: {
               'Content-Type': 'application/json'
             }
@@ -233,17 +235,18 @@
 
           fetchVenues();
         } catch (error) {
+          console.error('Create venue error:', error);
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: error.response?.data?.message || 'Failed to add venue.',
+            text: error.response?.data?.message || error.response?.data || 'Failed to add venue.',
             confirmButtonColor: '#3b82f6'
           });
         }
       }
     }
 
-    // Edit venue
+    // Edit venue - IMPORTANT: Uses "address" in request body
     async function editVenue(venueId) {
       try {
         Swal.fire({
@@ -254,7 +257,9 @@
 
         const response = await axios.get(`${BASE_URL}/${venueId}`);
         const venue = response.data;
-        console.log(venue);
+
+        // Handle both address and venueAddress from response
+        const currentAddress = venue.venueAddress || venue.address || '';
 
         const { value: formValues } = await Swal.fire({
           title: 'Edit Venue',
@@ -266,7 +271,7 @@
               </div>
               <div style="margin-bottom: 1rem;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Address *</label>
-                <input id="venueAddress" class="swal2-input" value="${venue.address || ''}" style="width: 100%; margin: 0;">
+                <input id="venueAddress" class="swal2-input" value="${currentAddress}" style="width: 100%; margin: 0;">
               </div>
               <div style="margin-bottom: 1rem;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">City *</label>
@@ -286,15 +291,16 @@
           padding: '2rem',
           preConfirm: () => {
             const venueName = document.getElementById('venueName').value.trim();
-            const venueAddress = document.getElementById('venueAddress').value.trim();
+            const address = document.getElementById('venueAddress').value.trim();
             const city = document.getElementById('venueCity').value.trim();
             const totalCapacity = parseInt(document.getElementById('venueCapacity').value);
 
-            if (!venueName || !venueAddress || !city || !totalCapacity) {
+            if (!venueName || !address || !city || !totalCapacity) {
               Swal.showValidationMessage('Please fill all required fields');
               return false;
             }
-            return { venueId, venueName, venueAddress, city, totalCapacity };
+            // IMPORTANT: Send "address" not "venueAddress" per Postman
+            return { venueId, venueName, address, city, totalCapacity };
           }
         });
 
@@ -321,10 +327,11 @@
           fetchVenues();
         }
       } catch (error) {
+        console.error('Update venue error:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error!',
-          text: error.response?.data?.message || 'Failed to update venue.',
+          text: error.response?.data?.message || error.response?.data || 'Failed to update venue.',
           confirmButtonColor: '#3b82f6'
         });
       }
@@ -362,10 +369,11 @@
 
           fetchVenues();
         } catch (error) {
+          console.error('Delete venue error:', error);
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: error.response?.data?.message || 'Failed to delete venue.',
+            text: error.response?.data?.message || error.response?.data || 'Failed to delete venue.',
             confirmButtonColor: '#3b82f6'
           });
         }
@@ -382,7 +390,6 @@
         currentPage = page;
       }
 
-      // Update active page button
       document.querySelectorAll('.page-btn').forEach((btn, index) => {
         if (index + 1 === currentPage) {
           btn.classList.add('bg-blue-500', 'text-white');
@@ -394,7 +401,6 @@
       });
     }
 
-    // Initialize first page as active
     changePage(1);
   </script>
 </body>
