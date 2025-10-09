@@ -1,123 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Events Booking | StagePassX</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
-<body>
-    <div class=" bg-[#FFFFFF] h-screen flex">
-        <div class="flex flex-col shadow-lg w-[25%] h-full border-r-1  gap-12 p-12">
-            <h1 class="text-black text-4xl font-bold">StagePassX</h1>
-            <nav class="flex flex-col gap-4">
-                <div class="flex gap-4 items-center">
-                    <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
-                     <a href="events.html" class="text-[#414A4C] text-lg font-semibold">Dashboard</a>
-                </div>
-                <div class="flex gap-4 items-center">
-                    <img src="events.png" alt="bookings" class="w-8 h-8 rounded-full">
-                    <a href="events.html" class="text-[#414A4C] text-lg font-semibold">Events</a>
-                </div>
-                <div class="flex gap-4 items-center">
-                    <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
-                    <a href="profile.html" class="text-[#414A4C] text-lg font-semibold">Profile</a>
-                </div> 
-                <div class="flex gap-4 items-center">
-                    <img src="settings.png" alt="logout" class="w-8 h-8 rounded-full">
-                    <a href="login.html" class="text-[#414A4C] text-lg font-semibold">Settings</a>  
-                </div> 
-                
-            </nav>
-        </div>
-        <div class="w-[65%] h-full">
-            <div class="flex w-full items-center justify-between">
-                <h1 class="text-black text-2xl font-bold p-12">Bookings</h1>
-                <button onclick= "openBookingForm()" class="bg-blue-400 font-semibold text-white p-2 rounded-lg hover:bg-blue-500">
-                + Add Booking
-                </button>
-            </div>
-            <div class="flex flex-col gap-4 p-12">
-                <h1 class="text-black text-xl font-bold">Upcoming Bookings</h1>
-                <table class="w-full">
-                    <thead class="bg-gray-200">
-                        <tr>
-                            <th class="text-left p-4">Event</th>
-                            <th class="text-left p-4">Date</th>
-                            <th class="text-left p-4">Time</th>
-                            <th class="text-left p-4">Venue</th>
-                            <th class="text-left p-4">Status</th>
-                            <th class="text-left p-4">Action</th>
-                        </tr>
-                    </thead>
-                </table>
-                <tbody>
 
-                </tbody>
+<body>
+  <div class="bg-[#FFFFFF] h-screen flex">
+    <!-- Sidebar -->
+    <div class="flex flex-col shadow-lg w-[20%] h-full border-r gap-12 p-12">
+      <h1 class="text-black text-4xl font-bold">StagePassX</h1>
+      <nav class="flex flex-col gap-8 flex-grow">
+        <div class="flex gap-4 items-center">
+          <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
+          <a href="bookings.html" class="text-[#414A4C] text-lg font-semibold hover:text-blue-500">Dashboard</a>
         </div>
+        <div class="flex gap-4 items-center">
+          <img src="events.png" alt="events" class="w-8 h-8 rounded-full">
+          <a href="events.html" class="text-[#414A4C] text-lg font-semibold hover:text-blue-500">Events</a>
+        </div>
+        <div class="flex gap-4 items-center">
+          <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
+          <a href="profile.html" class="text-[#414A4C] text-lg font-semibold hover:text-blue-500">Profile</a>
+        </div>
+      </nav>
+
+      <!-- Logout Button -->
+      <button 
+        onclick="handleLogout()" 
+        class="bg-red-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-red-600 transition">
+        Logout
+      </button>
     </div>
-    <script>
-    async function openBookingForm() {
+
+    <!-- Main Content -->
+    <div class="w-[75%] h-full overflow-y-auto p-12">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-black text-2xl font-bold">All Events</h1>
+      </div>
+
+      <table class="w-full border-collapse shadow-sm rounded-xl overflow-hidden">
+        <thead class="bg-blue-100">
+          <tr>
+            <th class="text-left p-4">Event Name</th>
+            <th class="text-left p-4">Date</th>
+            <th class="text-left p-4">Time</th>
+            <th class="text-left p-4">Venue(s)</th>
+            <th class="text-left p-4">Action</th>
+          </tr>
+        </thead>
+        <tbody id="eventsTableBody">
+          <tr>
+            <td colspan="5" class="text-center text-gray-500 p-4">Loading events...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API_URL_EVENTS = "http://localhost:9090/api/events/getAllEvents";
+    const API_URL_BOOKINGS = "http://localhost:9090/api/bookings";
+    const API_URL_TICKET_TYPES = "http://localhost:9090/api/ticket-types/event";
+
+    // ✅ Logout Function
+    function handleLogout() {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You will be logged out of StagePassX.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, logout",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#ef4444",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem("data");
+          Swal.fire({
+            icon: "success",
+            title: "Logged out!",
+            text: "You have been successfully logged out.",
+            showConfirmButton: false,
+            timer: 1500
+          });
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1500);
+        }
+      });
+    }
+
+    // Fetch all events
+    async function fetchEvents() {
+      try {
+        const response = await axios.get(API_URL_EVENTS);
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        return [];
+      }
+    }
+
+    // Render events
+    async function renderEvents() {
+      const events = await fetchEvents();
+      const tbody = document.getElementById('eventsTableBody');
+
+      if (!events || events.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center text-gray-500 p-4">No events available</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = events.map(event => `
+        <tr class="border-b hover:bg-gray-50 transition">
+          <td class="p-4 font-semibold">${event.eventName}</td>
+          <td class="p-4">${new Date(event.eventDate).toLocaleDateString() || '-'}</td>
+          <td class="p-4">${event.eventTime || '-'}</td>
+          <td class="p-4">${event.venue?.venueName || '-'}</td>
+          <td class="p-4">
+            <button onclick='openBookingForm(${JSON.stringify(event)})' 
+              class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+              Book
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Open booking form
+    async function openBookingForm(eventObj) {
+      const { eventId, eventName } = eventObj;
+      let ticketTypes = [];
+
+      try {
+        const response = await axios.post(API_URL_TICKET_TYPES, { eventId });
+        ticketTypes = response.data || [];
+      } catch (error) {
+        console.error("Error fetching ticket types:", error);
+      }
+
       const { value: formValues } = await Swal.fire({
-        title: 'Add Booking',
+        title: `Book Tickets for ${eventName}`,
         html: `
-        <div class="flex flex-col gap-4">
-          <input id="eventName" class="swal2-input" placeholder="Event Name">
-          <input id = "eventDate" type="date" class="swal2-input" placeholder="Event Date">
-          <input id = "eventTime" type="time" class="swal2-input" placeholder="Event Time">
-          <input id = "venue" class="swal2-input" placeholder="Venue">
-          <input id = "quantity" class="swal2-input" placeholder="Quantity">
-        </div>
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-col">
+              <label class="mb-1 font-semibold text-sm">Ticket Type</label>
+              <select id="ticketType" class="swal2-input border p-3 rounded-lg">
+                <option value="">Select Ticket Type</option>
+                ${ticketTypes.map(t => `
+                  <option value="${t.ticketTypeId}">
+                    ${t.typeName || t.ticketTypeName} - ₹${t.price}
+                  </option>
+                `).join('')}
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label class="mb-1 font-semibold text-sm">Quantity</label>
+              <input type="number" id="quantity" class="swal2-input border p-3 rounded-lg" min="1" placeholder="Enter quantity">
+            </div>
+          </div>
         `,
-        confirmButtonText: 'Save Booking',
+        confirmButtonText: 'Book Now',
         focusConfirm: false,
         showCancelButton: true,
         preConfirm: () => {
-          const eventName = document.getElementById('eventName').value.trim();
-          const eventDate = document.getElementById('eventDate').value.trim();
-          const eventTime = document.getElementById('eventTime').value.trim();
-          const venue = document.getElementById('venue').value.trim();
+          const ticketTypeId = document.getElementById('ticketType').value;
+          const quantity = document.getElementById('quantity').value.trim();
 
-
-          if (!eventName || !eventDate || !eventTime || !venue) {
-            Swal.showValidationMessage('Please fill all fields');
+          if (!ticketTypeId || !quantity) {
+            Swal.showValidationMessage('Please select a ticket type and enter quantity');
             return false;
           }
 
-          return { eventName, eventDate, eventTime, venue };
+          return { eventId, ticketTypeId, quantity };
         }
       });
 
       if (formValues) {
         try {
-          // Show loading indicator
-          Swal.fire({
-            title: 'Saving Booking...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-          });
+          Swal.fire({ title: 'Booking...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-          // Send data to backend API
-          const response = await axios.post("http://localhost:9090/bookings/add", formValues);
+          const bookingData = {
+            userId: JSON.parse(localStorage.getItem('data')).userId,
+            eventId: formValues.eventId,
+            ticketTypeId: formValues.ticketTypeId,
+            quantity: formValues.quantity,
+            bookingStatus: "PENDING"
+          };
 
-          // Show success message
-          Swal.fire({
-            icon: 'success',
-            title: 'Booking Added!',
-            text: `Booking ID: ${response.data.bookingId || 'Created Successfully'}`
-          });
+          const response = await axios.post(`${API_URL_BOOKINGS}/createBooking`, bookingData);
+          Swal.fire({ icon: 'success', title: 'Booking Successful!', text: `Booking ID: ${response.data.bookingId || 'Created Successfully'}` });
         } catch (error) {
-          // Show error message
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: error.response?.data?.message || 'Failed to save booking. Please try again.'
-          });
+          Swal.fire({ icon: 'error', title: 'Error!', text: error.response?.data?.message || 'Failed to save booking.' });
         }
       }
     }
+
+    renderEvents();
   </script>
 </body>
 </html>

@@ -1,72 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Events | StagePassX</title>
-
-  <!-- Tailwind CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Bookings | StagePassX</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Axios -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
   <div class="bg-[#FFFFFF] h-screen flex">
     <!-- Sidebar -->
-    <div class="flex flex-col shadow-lg w-[25%] h-full border-r gap-12 p-12">
-      <h1 class="text-black text-4xl font-bold">StagePassX</h1>
-      <nav class="flex flex-col gap-4" id="sidebarNav">
-        <div class="flex gap-4 items-center">
-          <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
-          <a href="bookings.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Dashboard</a>
-        </div>
-
-        <div class="flex gap-4 items-center">
-          <img src="events.png" alt="events" class="w-8 h-8 rounded-full">
-          <a href="events.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Events</a>
-        </div>
-
-        <div class="flex gap-4 items-center">
-          <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
-          <a href="profile.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Profile</a>
-        </div> 
-
-        <div class="flex gap-4 items-center">
-          <img src="settings.png" alt="settings" class="w-8 h-8 rounded-full">
-          <a href="settings.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Settings</a>  
-        </div> 
-      </nav>
-    </div>
-
-    <!-- Main Section -->
-    <div class="w-[75%] h-full overflow-y-auto">
-      <!-- Header -->
-      <div class="flex w-full items-center justify-between border-b px-12 py-6">
-        <h1 class="text-black text-2xl font-bold">Events</h1>
-        <button 
-          onclick="openAddEventForm()" 
-          class="bg-blue-500 font-semibold text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-          + Add Event
-        </button>
+    <div class="flex flex-col shadow-lg w-[20%] h-full border-r justify-between">
+      <div class="flex flex-col gap-12 p-12">
+        <h1 class="text-black text-4xl font-bold">StagePassX</h1>
+        <nav class="flex flex-col gap-8" id="sidebarNav">
+          <div class="flex gap-4 items-center">
+            <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full" />
+            <a href="bookings.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Dashboard</a>
+          </div>
+          <div class="flex gap-4 items-center">
+            <img src="events.png" alt="events" class="w-8 h-8 rounded-full" />
+            <a href="events.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Events</a>
+          </div>
+          <div class="flex gap-4 items-center">
+            <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full" />
+            <a href="profile.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Profile</a>
+          </div>
+        </nav>
       </div>
 
-      <!-- Events Table -->
+      <!-- Logout Button -->
+      <div class="p-12 border-t flex justify-center">
+        <button 
+          id="logoutBtn"
+          class="w-full bg-red-500 text-white font-semibold py-2 rounded-lg hover:bg-red-600 transition duration-300 flex items-center justify-center gap-2"
+        >
+          
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-[75%] h-full overflow-y-auto">
+      <div class="flex w-full items-center justify-between border-b px-12 py-6">
+        <h1 class="text-black text-2xl font-bold">My Bookings</h1>
+      </div>
+
       <div class="flex flex-col gap-4 p-12">
-        <h1 class="text-black text-xl font-bold">Upcoming Events</h1>
-        <table class="w-full border-collapse shadow-sm">
-          <thead class="bg-blue-100">
+        <h1 class="text-black text-xl font-bold">Upcoming Bookings</h1>
+
+        <table class="w-full border-collapse shadow-sm rounded-xl overflow-hidden">
+          <thead class="bg-blue-100 text-gray-700">
             <tr>
-              <th class="text-left p-4">Name</th>
+              <th class="text-left p-4">Event Name</th>
               <th class="text-left p-4">Date</th>
-              <th class="text-left p-4">Location</th>
-              <th class="text-left p-4">Description</th>
+              <th class="text-left p-4">Venue</th>
+              <th class="text-left p-4">Ticket Type</th>
+              <th class="text-left p-4">Quantity</th>
+              <th class="text-left p-4">Status</th>
             </tr>
           </thead>
-          <tbody id="eventTableBody">
+          <tbody id="bookingsTableBody">
             <tr>
-              <td colspan="4" class="text-center text-gray-500 p-4">Loading events...</td>
+              <td colspan="6" class="text-center text-gray-500 p-4">Loading bookings...</td>
             </tr>
           </tbody>
         </table>
@@ -75,13 +74,12 @@
   </div>
 
   <script>
-    const API_URL = "http://localhost:9090/events";
+    const API_URL_BOOKINGS = "http://localhost:9090/api/bookings/user";
 
-    // Highlight active link dynamically
     document.addEventListener("DOMContentLoaded", () => {
-      const currentPage = window.location.pathname.split("/").pop(); // e.g. "events.html"
+      // Highlight active sidebar link
+      const currentPage = window.location.pathname.split("/").pop();
       const links = document.querySelectorAll(".nav-link");
-
       links.forEach(link => {
         if (link.getAttribute("href") === currentPage) {
           link.classList.add("text-blue-600", "font-bold");
@@ -89,97 +87,79 @@
           link.classList.remove("text-blue-600", "font-bold");
         }
       });
+
+      // Fetch user bookings
+      fetchBookings();
+
+      // Logout functionality
+      document.getElementById("logoutBtn").addEventListener("click", handleLogout);
     });
 
-    // Fetch events
-    async function fetchEvents() {
-      const tableBody = document.getElementById("eventTableBody");
-      tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">Loading events...</td></tr>`;
+    async function fetchBookings() {
+      const tableBody = document.getElementById("bookingsTableBody");
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 p-4">Loading bookings...</td></tr>`;
 
       try {
-        const response = await axios.get(API_URL);
-        const events = response.data;
-
-        if (!events.length) {
-          tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No events available.</td></tr>`;
+        const user = JSON.parse(localStorage.getItem("data"));
+        if (!user?.userId) {
+          tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 p-4">User not logged in</td></tr>`;
           return;
         }
 
-        tableBody.innerHTML = "";
-        events.forEach(event => {
-          const row = `
-            <tr class="border-b hover:bg-blue-50">
-              <td class="p-4">${event.name}</td>
-              <td class="p-4">${event.date}</td>
-              <td class="p-4">${event.location}</td>
-              <td class="p-4">${event.description || "—"}</td>
-            </tr>
-          `;
-          tableBody.insertAdjacentHTML("beforeend", row);
-        });
+        const response = await axios.post(`${API_URL_BOOKINGS}`, { userId: user.userId });
+        const bookings = response.data;
+
+        if (!bookings || bookings.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 p-4">No bookings yet.</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = bookings.map(b => `
+          <tr class="border-b hover:bg-blue-50 transition">
+            <td class="p-4 font-semibold">${b.event?.eventName || "—"}</td>
+            <td class="p-4">${b.event?.eventDate ? new Date(b.event.eventDate).toLocaleDateString() : "—"}</td>
+            <td class="p-4">${b.event?.venue?.venueName || "—"}</td>
+            <td class="p-4">${b.ticketType?.typeName || "—"}</td>
+            <td class="p-4">${b.quantity || 0}</td>
+            <td class="p-4">
+              <span class="px-3 py-1 rounded-full text-sm font-semibold 
+                ${b.bookingStatus === "CONFIRMED" ? "bg-green-100 text-green-700" : 
+                  b.bookingStatus === "PENDING" ? "bg-yellow-100 text-yellow-700" : 
+                  "bg-red-100 text-red-700"}">
+                ${b.bookingStatus || "—"}
+              </span>
+            </td>
+          </tr>
+        `).join('');
       } catch (error) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 p-4">Error loading events</td></tr>`;
+        console.error("Error fetching bookings:", error);
+        document.getElementById("bookingsTableBody").innerHTML =
+          `<tr><td colspan="6" class="text-center text-red-500 p-4">Failed to load bookings.</td></tr>`;
       }
     }
 
-    // Add event form
-    async function openAddEventForm() {
-      const { value: formValues } = await Swal.fire({
-        title: 'Add Event',
-        html: `
-          <div class="flex flex-col gap-3">
-            <input id="eventName" class="swal2-input" placeholder="Event Name">
-            <input id="eventDate" type="date" class="swal2-input" placeholder="Event Date">
-            <input id="eventLocation" class="swal2-input" placeholder="Location">
-            <textarea id="eventDescription" class="swal2-textarea" placeholder="Description"></textarea>
-          </div>
-        `,
-        confirmButtonText: 'Save Event',
-        focusConfirm: false,
+    function handleLogout() {
+      Swal.fire({
+        title: "Are you sure you want to log out?",
+        icon: "warning",
         showCancelButton: true,
-        preConfirm: () => {
-          const name = document.getElementById('eventName').value.trim();
-          const date = document.getElementById('eventDate').value.trim();
-          const location = document.getElementById('eventLocation').value.trim();
-          const description = document.getElementById('eventDescription').value.trim();
-
-          if (!name || !date || !location) {
-            Swal.showValidationMessage('Please fill all required fields');
-            return false;
-          }
-          return { name, date, location, description };
+        confirmButtonText: "Yes, logout",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#ef4444",
+      }).then(result => {
+        if (result.isConfirmed) {
+          localStorage.clear();
+          Swal.fire({
+            icon: "success",
+            title: "Logged out successfully",
+            showConfirmButton: false,
+            timer: 1500,
+          }).then(() => {
+            window.location.href = "login.html"; // redirect page
+          });
         }
       });
-
-      if (formValues) {
-        try {
-          Swal.fire({
-            title: 'Saving event...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-          });
-
-          await axios.post(`${API_URL}/add`, formValues);
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Event Added!',
-            text: `${formValues.name} created successfully.`,
-          });
-
-          fetchEvents(); // Refresh
-        } catch (error) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: error.response?.data?.message || 'Failed to save event.',
-          });
-        }
-      }
     }
-
-    // Load events
-    fetchEvents();
   </script>
 </body>
 </html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="bg-[#FFFFFF] h-screen flex">
+    <!-- Sidebar -->
+    <div class="flex flex-col shadow-lg w-[20%] h-full border-r gap-12 p-12">
+      <h1 class="text-black text-4xl font-bold">StagePassX</h1>
+      <nav class="flex flex-col gap-8">
+        <div class="flex gap-4 items-center">
+          <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
+          <a href="bookings.html" class="text-[#414A4C] text-lg font-semibold">Dashboard</a>
+        </div>
+        <div class="flex gap-4 items-center">
+          <img src="events.png" alt="events" class="w-8 h-8 rounded-full">
+          <a href="events.html" class="text-[#414A4C] text-lg font-semibold">Events</a>
+        </div>
+        <div class="flex gap-4 items-center">
+          <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
+          <a href="profile.html" class="text-[#414A4C] text-lg font-semibold">Profile</a>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-[75%] h-full overflow-y-auto p-12">
+      <h1 class="text-black text-2xl font-bold mb-8">Profile</h1>
+
+      <form id="profileForm" class="flex flex-col gap-8">
+        <div class="grid grid-cols-2 gap-8">
+          <!-- Personal Information -->
+          <div class="flex flex-col gap-4 border p-6 rounded-lg shadow-sm">
+            <h2 class="text-lg font-semibold mb-2">Personal Information</h2>
+            <input type="text" id="userName" placeholder="User Name" class="border p-2 rounded-lg w-full">
+            <div class="flex gap-4">
+                <input type="text" id="firstName" placeholder="First Name" class="border p-2 rounded-lg w-full">
+                <input type="text" id="lastName" placeholder="Last Name" class="border p-2 rounded-lg w-full">
+            </div>
+            <input type="email" id="email" placeholder="Email" class="border p-2 rounded-lg w-full">
+            <input type="tel" id="phoneNumber" placeholder="Phone Number" class="border p-2 rounded-lg w-full">
+            <input type="text" id="role" placeholder="Role" class="border p-2 rounded-lg w-full">
+          </div>
+
+          <!-- Preferences -->
+          <div class="flex flex-col gap-4 border p-6 rounded-lg shadow-sm">
+            <h2 class="text-lg font-semibold mb-2">Preferences</h2>
+            <select id="language" class="border p-2 rounded-lg w-full">
+              <option value="english">English</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+            </select>
+            <select id="timeZone" class="border p-2 rounded-lg w-full">
+              <option value="google">Google Time</option>
+              <option value="pst">Pacific Time (PST)</option>
+              <option value="est">Eastern Time (EST)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Update Button -->
+        <button type="submit" class="bg-blue-500 font-semibold text-white px-6 py-2 rounded-lg hover:bg-blue-600 w-40">
+          Update Profile
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const profileForm = document.getElementById('profileForm');
+
+    // Autofill form from localStorage
+    const savedProfile = JSON.parse(localStorage.getItem('data'));
+    if (savedProfile) {
+      document.getElementById('userName').value = savedProfile.username || '';
+      document.getElementById('firstName').value = savedProfile.firstName || '';
+      document.getElementById('lastName').value = savedProfile.lastName || '';
+      document.getElementById('email').value = savedProfile.email || '';
+      document.getElementById('phoneNumber').value = savedProfile.phoneNumber || '';
+      document.getElementById('role').value = savedProfile.role || '';
+    } else {
+      // Default values if nothing in localStorage
+      document.getElementById('userName').value = 'John Doe';
+      document.getElementById('firstName').value = 'John';
+      document.getElementById('lastName').value = 'Doe';
+      document.getElementById('email').value = 'john.doe@example.com';
+      document.getElementById('phoneNumber').value = '1234567890';
+      document.getElementById('role').value = 'Customer';
+    }
+
+    profileForm.addEventListener('submit', async(e) => {
+      e.preventDefault();
+      const profileData = {
+        username: document.getElementById('userName').value,
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phoneNumber').value,
+        role: document.getElementById('role').value,
+        isActive: true,
+      };
+      console.log(profileData);
+      try {
+        const savedData = JSON.parse(localStorage.getItem('data'));
+        const response = await axios.put(`http://localhost:9090/users/editUser/${savedData.userId}`, profileData, {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        });
+        console.log('Profile updated on server:', response.data);
+
+        // Update localStorage
+        // localStorage.setItem('profileData', JSON.stringify(profileData));
+
+        alert('Profile updated successfully!');
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('Failed to update profile. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
