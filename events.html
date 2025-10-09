@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events | StagePassX</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="bg-[#FFFFFF] h-screen flex">
+    <!-- Sidebar -->
+    <div class="flex flex-col shadow-lg w-[25%] h-full border-r gap-12 p-12">
+      <h1 class="text-black text-4xl font-bold">StagePassX</h1>
+      <nav class="flex flex-col gap-4" id="sidebarNav">
+        <div class="flex gap-4 items-center">
+          <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
+          <a href="bookings.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Dashboard</a>
+        </div>
+
+        <div class="flex gap-4 items-center">
+          <img src="events.png" alt="events" class="w-8 h-8 rounded-full">
+          <a href="events.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Events</a>
+        </div>
+
+        <div class="flex gap-4 items-center">
+          <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
+          <a href="profile.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Profile</a>
+        </div> 
+
+        <div class="flex gap-4 items-center">
+          <img src="settings.png" alt="settings" class="w-8 h-8 rounded-full">
+          <a href="settings.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Settings</a>  
+        </div> 
+      </nav>
+    </div>
+
+    <!-- Main Section -->
+    <div class="w-[75%] h-full overflow-y-auto">
+      <!-- Header -->
+      <div class="flex w-full items-center justify-between border-b px-12 py-6">
+        <h1 class="text-black text-2xl font-bold">Events</h1>
+        <button 
+          onclick="openAddEventForm()" 
+          class="bg-blue-500 font-semibold text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          + Add Event
+        </button>
+      </div>
+
+      <!-- Events Table -->
+      <div class="flex flex-col gap-4 p-12">
+        <h1 class="text-black text-xl font-bold">Upcoming Events</h1>
+        <table class="w-full border-collapse shadow-sm">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="text-left p-4">Name</th>
+              <th class="text-left p-4">Date</th>
+              <th class="text-left p-4">Location</th>
+              <th class="text-left p-4">Description</th>
+            </tr>
+          </thead>
+          <tbody id="eventTableBody">
+            <tr>
+              <td colspan="4" class="text-center text-gray-500 p-4">Loading events...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:9090/events";
+
+    // Highlight active link dynamically
+    document.addEventListener("DOMContentLoaded", () => {
+      const currentPage = window.location.pathname.split("/").pop(); // e.g. "events.html"
+      const links = document.querySelectorAll(".nav-link");
+
+      links.forEach(link => {
+        if (link.getAttribute("href") === currentPage) {
+          link.classList.add("text-blue-600", "font-bold");
+        } else {
+          link.classList.remove("text-blue-600", "font-bold");
+        }
+      });
+    });
+
+    // Fetch events
+    async function fetchEvents() {
+      const tableBody = document.getElementById("eventTableBody");
+      tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">Loading events...</td></tr>`;
+
+      try {
+        const response = await axios.get(API_URL);
+        const events = response.data;
+
+        if (!events.length) {
+          tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No events available.</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = "";
+        events.forEach(event => {
+          const row = `
+            <tr class="border-b hover:bg-blue-50">
+              <td class="p-4">${event.name}</td>
+              <td class="p-4">${event.date}</td>
+              <td class="p-4">${event.location}</td>
+              <td class="p-4">${event.description || "—"}</td>
+            </tr>
+          `;
+          tableBody.insertAdjacentHTML("beforeend", row);
+        });
+      } catch (error) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 p-4">Error loading events</td></tr>`;
+      }
+    }
+
+    // Add event form
+    async function openAddEventForm() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Add Event',
+        html: `
+          <div class="flex flex-col gap-3">
+            <input id="eventName" class="swal2-input" placeholder="Event Name">
+            <input id="eventDate" type="date" class="swal2-input" placeholder="Event Date">
+            <input id="eventLocation" class="swal2-input" placeholder="Location">
+            <textarea id="eventDescription" class="swal2-textarea" placeholder="Description"></textarea>
+          </div>
+        `,
+        confirmButtonText: 'Save Event',
+        focusConfirm: false,
+        showCancelButton: true,
+        preConfirm: () => {
+          const name = document.getElementById('eventName').value.trim();
+          const date = document.getElementById('eventDate').value.trim();
+          const location = document.getElementById('eventLocation').value.trim();
+          const description = document.getElementById('eventDescription').value.trim();
+
+          if (!name || !date || !location) {
+            Swal.showValidationMessage('Please fill all required fields');
+            return false;
+          }
+          return { name, date, location, description };
+        }
+      });
+
+      if (formValues) {
+        try {
+          Swal.fire({
+            title: 'Saving event...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+          });
+
+          await axios.post(`${API_URL}/add`, formValues);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Event Added!',
+            text: `${formValues.name} created successfully.`,
+          });
+
+          fetchEvents(); // Refresh
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || 'Failed to save event.',
+          });
+        }
+      }
+    }
+
+    // Load events
+    fetchEvents();
+  </script>
+</body>
+</html>

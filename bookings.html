@@ -15,11 +15,11 @@
             <nav class="flex flex-col gap-4">
                 <div class="flex gap-4 items-center">
                     <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
-                     <a href="index.html" class="text-[#414A4C] text-lg font-semibold">Dashboard</a>
+                     <a href="events.html" class="text-[#414A4C] text-lg font-semibold">Dashboard</a>
                 </div>
                 <div class="flex gap-4 items-center">
                     <img src="events.png" alt="bookings" class="w-8 h-8 rounded-full">
-                    <a href="bookings.html" class="text-[#414A4C] text-lg font-semibold">Events</a>
+                    <a href="events.html" class="text-[#414A4C] text-lg font-semibold">Events</a>
                 </div>
                 <div class="flex gap-4 items-center">
                     <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
@@ -63,44 +63,59 @@
       const { value: formValues } = await Swal.fire({
         title: 'Add Booking',
         html: `
-          <input id="customerName" class="swal2-input" placeholder="Customer Name">
-          <select id="roomType" class="swal2-input">
-            <option value="">Select Room Type</option>
-            <option value="single">Single</option>
-            <option value="double">Double</option>
-            <option value="suite">Suite</option>
-          </select>
-          <input id="checkIn" type="date" class="swal2-input" placeholder="Check-in Date">
-          <input id="checkOut" type="date" class="swal2-input" placeholder="Check-out Date">
+        <div class="flex flex-col gap-4">
+          <input id="eventName" class="swal2-input" placeholder="Event Name">
+          <input id = "eventDate" type="date" class="swal2-input" placeholder="Event Date">
+          <input id = "eventTime" type="time" class="swal2-input" placeholder="Event Time">
+          <input id = "venue" class="swal2-input" placeholder="Venue">
+          <input id = "quantity" class="swal2-input" placeholder="Quantity">
+        </div>
         `,
         confirmButtonText: 'Save Booking',
         focusConfirm: false,
         showCancelButton: true,
         preConfirm: () => {
-          const customerName = document.getElementById('customerName').value.trim();
-          const roomType = document.getElementById('roomType').value;
-          const checkIn = document.getElementById('checkIn').value;
-          const checkOut = document.getElementById('checkOut').value;
+          const eventName = document.getElementById('eventName').value.trim();
+          const eventDate = document.getElementById('eventDate').value.trim();
+          const eventTime = document.getElementById('eventTime').value.trim();
+          const venue = document.getElementById('venue').value.trim();
 
-          if (!customerName || !roomType || !checkIn || !checkOut) {
+
+          if (!eventName || !eventDate || !eventTime || !venue) {
             Swal.showValidationMessage('Please fill all fields');
             return false;
           }
 
-          return { customerName, roomType, checkIn, checkOut };
+          return { eventName, eventDate, eventTime, venue };
         }
       });
 
       if (formValues) {
-        Swal.fire({
-          title: 'Booking Added!',
-          html: `
-            <b>${formValues.customerName}</b> booked a <b>${formValues.roomType}</b> room.<br>
-            <b>Check-in:</b> ${formValues.checkIn}<br>
-            <b>Check-out:</b> ${formValues.checkOut}
-          `,
-          icon: 'success'
-        });
+        try {
+          // Show loading indicator
+          Swal.fire({
+            title: 'Saving Booking...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+          });
+
+          // Send data to backend API
+          const response = await axios.post("http://localhost:9090/bookings/add", formValues);
+
+          // Show success message
+          Swal.fire({
+            icon: 'success',
+            title: 'Booking Added!',
+            text: `Booking ID: ${response.data.bookingId || 'Created Successfully'}`
+          });
+        } catch (error) {
+          // Show error message
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || 'Failed to save booking. Please try again.'
+          });
+        }
       }
     }
   </script>
