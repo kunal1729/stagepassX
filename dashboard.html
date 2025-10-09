@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | StagePassX</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="bg-[#FFFFFF] h-screen flex">
+   <!-- Sidebar -->
+    <div class="flex flex-col shadow-lg md:w-[20%] w-full h-auto md:h-screen border-r gap-6 md:gap-12 p-6 md:p-12">
+      <h1 class="text-black text-2xl md:text-4xl font-bold">StagePassX</h1>
+      <nav class="flex flex-col gap-8" id="sidebarNav">
+        <div class="flex gap-4 items-center">
+          <svg class="w-8 h-8 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+          <a href="dashboard.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Dashboard</a>
+        </div>
+
+        <div class="flex gap-4 items-center">
+          <svg class="w-8 h-8 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <a href="yourEvents.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Events</a>
+        </div>
+
+        <div class="flex gap-4 items-center">
+          <svg class="w-8 h-8 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          <a href="venuepage.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Venues</a>
+        </div> 
+
+        <div class="flex gap-4 items-center">
+          <svg class="w-8 h-8 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <a href="TicketTYpe.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Ticket Types</a>  
+        </div> 
+      </nav>
+    </div>
+
+    <!-- Main Section -->
+    <div class="w-[80%] h-full overflow-y-auto">
+      <!-- Header -->
+      <div class="flex w-full items-center justify-between border-b px-12 py-6">
+        <h1 class="text-black text-2xl font-bold">Dashboard</h1>
+        <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300">
+          <svg class="w-6 h-6 text-[#414A4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div class="flex flex-col gap-8 p-12">
+        <!-- Search Bar -->
+        <div class="relative">
+          <input 
+            type="text" 
+            placeholder="Search" 
+            class="w-full px-6 py-3 bg-blue-50 rounded-lg text-[#414A4C] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+          <svg class="w-5 h-5 text-gray-400 absolute right-4 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-3 gap-6">
+          <!-- Total Bookings Card -->
+          <div class="bg-gray-100 rounded-lg p-6 shadow-sm">
+            <p class="text-[#414A4C] text-sm font-semibold mb-2">Total Bookings</p>
+            <p class="text-black text-3xl font-bold" id="totalBookings">0</p>
+          </div>
+
+          <!-- Total Amounts Card -->
+          <div class="bg-gray-100 rounded-lg p-6 shadow-sm">
+            <p class="text-[#414A4C] text-sm font-semibold mb-2">Total amounts</p>
+            <p class="text-black text-3xl font-bold" id="totalAmounts">$ 0</p>
+          </div>
+
+          <!-- Average Ticket Price Card -->
+          <div class="bg-gray-100 rounded-lg p-6 shadow-sm">
+            <p class="text-[#414A4C] text-sm font-semibold mb-2">Average Ticket price</p>
+            <p class="text-black text-3xl font-bold" id="avgTicketPrice">$ 0</p>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Bar Chart -->
+          <div class="bg-white rounded-lg p-6 shadow-sm border">
+            <div class="mb-4">
+              <p class="text-[#414A4C] text-sm font-semibold">Bookings over time</p>
+              <p class="text-green-600 text-lg font-bold" id="bookingGrowth">+15%</p>
+            </div>
+            <canvas id="barChart"></canvas>
+          </div>
+
+          <!-- Line Chart -->
+          <div class="bg-white rounded-lg p-6 shadow-sm border">
+            <div class="mb-4">
+              <p class="text-[#414A4C] text-sm font-semibold">Bookings over time</p>
+              <p class="text-green-600 text-lg font-bold" id="revenueGrowth">+15%</p>
+            </div>
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:9090"; // Base API URL
+
+    // Highlight active link dynamically
+    document.addEventListener("DOMContentLoaded", () => {
+      const currentPage = window.location.pathname.split("/").pop();
+      const links = document.querySelectorAll(".nav-link");
+
+      links.forEach(link => {
+        if (link.getAttribute("href") === currentPage) {
+          link.classList.add("text-blue-600", "font-bold");
+        } else {
+          link.classList.remove("text-blue-600", "font-bold");
+        }
+      });
+
+      // Load dashboard data
+      loadDashboardData();
+    });
+
+    // Fetch dashboard statistics
+    async function loadDashboardData() {
+      try {
+        // Fetch stats from backend
+        const statsResponse = await axios.get(`${API_URL}/dashboard/stats`);
+        const stats = statsResponse.data;
+
+        // Update stat cards
+        document.getElementById('totalBookings').textContent = stats.totalBookings || 0;
+        document.getElementById('totalAmounts').textContent = `$ ${(stats.totalAmounts || 0).toLocaleString()}`;
+        document.getElementById('avgTicketPrice').textContent = `$ ${(stats.avgTicketPrice || 0).toLocaleString()}`;
+
+        // Fetch chart data
+        const chartResponse = await axios.get(`${API_URL}/dashboard/charts`);
+        const chartData = chartResponse.data;
+
+        // Initialize charts
+        initializeBarChart(chartData.barChart || getDefaultBarData());
+        initializeLineChart(chartData.lineChart || getDefaultLineData());
+
+        // Update growth percentages
+        if (chartData.bookingGrowth !== undefined) {
+          document.getElementById('bookingGrowth').textContent = `${chartData.bookingGrowth > 0 ? '+' : ''}${chartData.bookingGrowth}%`;
+        }
+        if (chartData.revenueGrowth !== undefined) {
+          document.getElementById('revenueGrowth').textContent = `${chartData.revenueGrowth > 0 ? '+' : ''}${chartData.revenueGrowth}%`;
+        }
+
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        // Show default/mock data if API fails
+        loadMockData();
+      }
+    }
+
+    // Load mock data for testing without backend
+    function loadMockData() {
+      document.getElementById('totalBookings').textContent = '1,250';
+      document.getElementById('totalAmounts').textContent = '$ 1,250';
+      document.getElementById('avgTicketPrice').textContent = '$ 1,250';
+      
+      initializeBarChart(getDefaultBarData());
+      initializeLineChart(getDefaultLineData());
+    }
+
+    // Default bar chart data
+    function getDefaultBarData() {
+      return {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+        data: [45, 35, 55, 75, 85]
+      };
+    }
+
+    // Default line chart data
+    function getDefaultLineData() {
+      return {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+        data: [20, 35, 45, 50, 48, 55, 70, 75, 90]
+      };
+    }
+
+    // Initialize Bar Chart
+    function initializeBarChart(data) {
+      const ctx = document.getElementById('barChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            data: data.data,
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(147, 197, 253, 0.8)',
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(59, 130, 246, 0.8)'
+            ],
+            borderWidth: 0,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                display: true,
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Initialize Line Chart
+    function initializeLineChart(data) {
+      const ctx = document.getElementById('lineChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            data: data.data,
+            borderColor: 'rgba(59, 130, 246, 1)',
+            backgroundColor: 'rgba(147, 197, 253, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                display: true,
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

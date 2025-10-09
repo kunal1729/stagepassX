@@ -12,39 +12,33 @@
 <body>
   <div class="bg-[#FFFFFF] h-screen flex">
     <!-- Sidebar -->
-    <div class="flex flex-col shadow-lg w-[20%] h-full border-r justify-between">
-      <div class="flex flex-col gap-12 p-12">
-        <h1 class="text-black text-4xl font-bold">StagePassX</h1>
-        <nav class="flex flex-col gap-8" id="sidebarNav">
-          <div class="flex gap-4 items-center">
-            <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full" />
-            <a href="bookings.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Dashboard</a>
-          </div>
-          <div class="flex gap-4 items-center">
-            <img src="events.png" alt="events" class="w-8 h-8 rounded-full" />
-            <a href="events.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Events</a>
-          </div>
-          <div class="flex gap-4 items-center">
-            <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full" />
-            <a href="profile.html" class="nav-link text-[#414A4C] text-lg font-semibold hover:text-blue-500">Profile</a>
-          </div>
-        </nav>
-      </div>
+    <div class="flex flex-col shadow-lg w-[20%] h-full border-r gap-12 p-12">
+      <h1 class="text-black text-4xl font-bold">StagePassX</h1>
+      <nav class="flex flex-col gap-8">
+        <div class="flex gap-4 items-center">
+          <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
+          <a href="bookings.html" class="text-[#414A4C] text-lg font-semibold">Dashboard</a>
+        </div>
+        <div class="flex gap-4 items-center">
+          <img src="events.png" alt="events" class="w-8 h-8 rounded-full">
+          <a href="events.html" class="text-[#414A4C] text-lg font-semibold">My Bookings</a>
+        </div>
+        <div class="flex gap-4 items-center">
+          <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
+          <a href="profile.html" class="text-[#414A4C] text-lg font-semibold">Profile</a>
+        </div>
+      </nav>
 
       <!-- Logout Button -->
-      <div class="p-12 border-t flex justify-center">
-        <button 
-          id="logoutBtn"
-          class="w-full bg-red-500 text-white font-semibold py-2 rounded-lg hover:bg-red-600 transition duration-300 flex items-center justify-center gap-2"
-        >
-          
-          Logout
-        </button>
-      </div>
+      <button 
+        onclick="handleLogout()" 
+        class="bg-red-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-red-600 transition">
+        Logout
+      </button>
     </div>
 
     <!-- Main Content -->
-    <div class="w-[75%] h-full overflow-y-auto">
+    <div class="w-[80%] h-full overflow-y-auto">
       <div class="flex w-full items-center justify-between border-b px-12 py-6">
         <h1 class="text-black text-2xl font-bold">My Bookings</h1>
       </div>
@@ -58,7 +52,7 @@
               <th class="text-left p-4">Event Name</th>
               <th class="text-left p-4">Date</th>
               <th class="text-left p-4">Venue</th>
-              <th class="text-left p-4">Ticket Type</th>
+              <th class="text-left p-4">Reference No.</th>
               <th class="text-left p-4">Quantity</th>
               <th class="text-left p-4">Status</th>
             </tr>
@@ -107,6 +101,7 @@
         }
 
         const response = await axios.post(`${API_URL_BOOKINGS}`, { userId: user.userId });
+        console.log(response.data);
         const bookings = response.data;
 
         if (!bookings || bookings.length === 0) {
@@ -116,10 +111,10 @@
 
         tableBody.innerHTML = bookings.map(b => `
           <tr class="border-b hover:bg-blue-50 transition">
-            <td class="p-4 font-semibold">${b.event?.eventName || "—"}</td>
-            <td class="p-4">${b.event?.eventDate ? new Date(b.event.eventDate).toLocaleDateString() : "—"}</td>
-            <td class="p-4">${b.event?.venue?.venueName || "—"}</td>
-            <td class="p-4">${b.ticketType?.typeName || "—"}</td>
+            <td class="p-4 font-semibold">${b?.eventName || "—"}</td>
+            <td class="p-4">${b?.bookingDate ? new Date(b.bookingDate).toLocaleDateString() : "—"}</td>
+            <td class="p-4">${b?.venueName || "—"}</td>
+            <td class="p-4 font-semibold">#${b.bookingReference || "—"}</td>
             <td class="p-4">${b.quantity || 0}</td>
             <td class="p-4">
               <span class="px-3 py-1 rounded-full text-sm font-semibold 

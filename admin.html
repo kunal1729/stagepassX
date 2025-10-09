@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | StagePassX</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  
+  
+    <!-- Main Section -->
+     <div class="w-full h-full flex flex-col items-center justify-center">
+      <!-- Header -->
+      <div class="flex w-full items-center justify-between border-b bg-white px-12 py-6 shadow-sm">
+        <h1 class="text-black text-2xl font-bold">Admin Dashboard</h1>
+        <div class="flex gap-3">
+          <button 
+            onclick="openAddVenueForm()" 
+            class="bg-green-500 font-semibold text-white px-4 py-2 rounded-lg hover:bg-green-600">
+            + Add Venue
+          </button>
+          <button 
+            onclick="openCreateBookingForm()" 
+            class="bg-purple-500 font-semibold text-white px-4 py-2 rounded-lg hover:bg-purple-600">
+            + Create Booking
+          </button>
+          <button 
+            onclick="openCreateTicketTypeForm()" 
+            class="bg-orange-500 font-semibold text-white px-4 py-2 rounded-lg hover:bg-orange-600">
+            + Add Ticket Type
+          </button>
+          <button id="themeToggle" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 ml-4">
+           Dark Mode
+        </button>
+        <button 
+  onclick="window.location.href='index.html';"
+  class="bg-red-500 font-semibold text-white px-4 py-2 rounded-lg hover:bg-red-600"
+>
+  Logout
+</button>
+
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="flex border-b px-12 pt-6">
+        <button onclick="showTab('users')" id="usersTab" class="tab-btn px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600">
+          Users
+        </button>
+        <button onclick="showTab('venues')" id="venuesTab" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-500">
+          Venues
+        </button>
+        <button onclick="showTab('bookings')" id="bookingsTab" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-500">
+          Bookings
+        </button>
+        <button onclick="showTab('ticketTypes')" id="ticketTypesTab" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-500">
+          Ticket Types
+        </button>
+        <button onclick="showTab('events')" id="eventsTab" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-500">
+          Events
+        </button>
+        <button onclick="showTab('orders')" id="ordersTab" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-500">
+          Orders
+        </button>
+      </div>
+
+      <!-- Users Section -->
+      <div id="usersSection" class="flex flex-col gap-4 p-12">
+        <div class="flex justify-between items-center">
+          <h1 class="text-black text-xl font-bold">All Users</h1>
+          <div class="flex gap-2">
+            <button onclick="filterUsers('all')" class="filter-btn px-4 py-2 rounded-lg bg-blue-100 text-blue-600 font-semibold">All</button>
+            <button onclick="filterUsers('CUSTOMER')" class="filter-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600">Customers</button>
+            <button onclick="filterUsers('ORGANIZER')" class="filter-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600">Organizers</button>
+          </div>
+        </div>
+        <table class="w-full border-collapse shadow-sm">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="text-left p-4">ID</th>
+              <th class="text-left p-4">Username</th>
+              <th class="text-left p-4">Name</th>
+              <th class="text-left p-4">Email</th>
+              <th class="text-left p-4">Phone</th>
+              <th class="text-left p-4">Role</th>
+              <th class="text-left p-4">Status</th>
+              <th class="text-left p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <tr>
+              <td colspan="8" class="text-center text-gray-500 p-4">Loading users...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Venues Section -->
+      <div id="venuesSection" class="hidden flex-col gap-4 p-12">
+        <h1 class="text-black text-xl font-bold">All Venues</h1>
+        <table class="w-full border-collapse shadow-sm">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="text-left p-4">ID</th>
+              <th class="text-left p-4">Venue Name</th>
+              <th class="text-left p-4">Address</th>
+              <th class="text-left p-4">City</th>
+              <th class="text-left p-4">Capacity</th>
+              <th class="text-left p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="venueTableBody">
+            <tr>
+              <td colspan="6" class="text-center text-gray-500 p-4">Loading venues...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bookings Section -->
+      <div id="bookingsSection" class="hidden flex-col gap-4 p-12">
+        <div class="flex justify-between items-center">
+          <h1 class="text-black text-xl font-bold">Bookings Management</h1>
+          <div class="flex gap-3">
+            <input 
+              id="userIdSearch" 
+              type="number" 
+              placeholder="Search by User ID" 
+              class="border rounded-lg px-4 py-2 w-48"
+            />
+            <button onclick="searchByUserId()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+              Search User
+            </button>
+            <input 
+              id="bookingRefSearch" 
+              type="text" 
+              placeholder="Search by Booking Reference" 
+              class="border rounded-lg px-4 py-2 w-64"
+            />
+            <button onclick="searchByReference()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+              Search
+            </button>
+          </div>
+        </div>
+
+        <!-- View Options -->
+        <div class="flex gap-3 items-center">
+          <button onclick="fetchAllBookings()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+            View All Bookings
+          </button>
+          <span class="text-gray-400">|</span>
+          <label class="font-semibold">View bookings by event:</label>
+          <select id="eventSelector" onchange="fetchBookingsByEvent()" class="border rounded-lg px-4 py-2">
+            <option value="">Select an event</option>
+          </select>
+        </div>
+
+        <!-- Bookings Table -->
+        <div id="bookingsTableContainer">
+          <table class="w-full border-collapse shadow-sm">
+            <thead class="bg-blue-100">
+              <tr>
+                <th class="text-left p-4">Booking ID</th>
+                <th class="text-left p-4">Reference</th>
+                <th class="text-left p-4">User ID</th>
+                <th class="text-left p-4">Event ID</th>
+                <th class="text-left p-4">Ticket Type</th>
+                <th class="text-left p-4">Quantity</th>
+                <th class="text-left p-4">Status</th>
+                <th class="text-left p-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTableBody">
+              <tr>
+                <td colspan="8" class="text-center text-gray-500 p-4">Click "View All Bookings" or select an event</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ticket Types Section -->
+      <div id="ticketTypesSection" class="hidden flex-col gap-4 p-12">
+        <div class="flex justify-between items-center">
+          <h1 class="text-black text-xl font-bold">Ticket Types Management</h1>
+          <div class="flex gap-3 items-center">
+            <label class="font-semibold">Filter by event:</label>
+            <select id="ticketTypeEventFilter" onchange="filterTicketTypesByEvent()" class="border rounded-lg px-4 py-2">
+              <option value="">All Events</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ticket Types Table -->
+        <table class="w-full border-collapse shadow-sm">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="text-left p-4">Ticket Type ID</th>
+              <th class="text-left p-4">Event ID</th>
+              <th class="text-left p-4">Type Name</th>
+              <th class="text-left p-4">Price</th>
+              <th class="text-left p-4">Available</th>
+              <th class="text-left p-4">Sold</th>
+              <th class="text-left p-4">Status</th>
+              <th class="text-left p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ticketTypesTableBody">
+            <tr>
+              <td colspan="8" class="text-center text-gray-500 p-4">Loading ticket types...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Events Section -->
+      <div id="eventsSection" class="hidden flex-col gap-4 p-12">
+        <div class="flex justify-between items-center">
+          <h1 class="text-black text-xl font-bold">Events Management</h1>
+          <button 
+            onclick="openCreateEventForm()" 
+            class="bg-teal-500 font-semibold text-white px-4 py-2 rounded-lg hover:bg-teal-600">
+            + Create Event
+          </button>
+        </div>
+        <table class="w-full border-collapse shadow-sm">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="text-left p-4">Event ID</th>
+              <th class="text-left p-4">Event Name</th>
+              <th class="text-left p-4">Venue ID</th>
+              <th class="text-left p-4">Date</th>
+              <th class="text-left p-4">Time</th>
+              <th class="text-left p-4">Description</th>
+              <th class="text-left p-4">Status</th>
+              <th class="text-left p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTableBody">
+            <tr>
+              <td colspan="8" class="text-center text-gray-500 p-4">Loading events...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Orders Section -->
+      <div id="ordersSection" class="hidden flex-col gap-4 p-12">
+        <div class="flex justify-between items-center">
+          <h1 class="text-black text-xl font-bold">Orders Management</h1>
+          <div class="flex gap-3">
+            <input 
+              id="orderUserIdSearch" 
+              type="number" 
+              placeholder="Search by User ID" 
+              class="border rounded-lg px-4 py-2 w-48"
+            />
+            <button onclick="searchOrdersByUserId()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+              Search
+            </button>
+            <button onclick="fetchAllOrders()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+              View All Orders
+            </button>
+          </div>
+        </div>
+        <table class="w-full border-collapse shadow-sm">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="text-left p-4">Order ID</th>
+              <th class="text-left p-4">User ID</th>
+              <th class="text-left p-4">Total Amount</th>
+              <th class="text-left p-4">Order Date</th>
+              <th class="text-left p-4">Payment Status</th>
+              <th class="text-left p-4">Order Status</th>
+              <th class="text-left p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr>
+              <td colspan="7" class="text-center text-gray-500 p-4">Click "View All Orders" to load data</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    const USERS_API = "http://localhost:9090/users";
+    const VENUES_API = "http://localhost:9090/api/venues";
+    const BOOKINGS_API = "http://localhost:9090/api/bookings";
+    const TICKET_TYPES_API = "http://localhost:9090/api/ticket-types";
+    const ORDERS_API = "http://localhost:9090/api/orders";
+    const EVENTS_API = "http://localhost:9090/api/events";
+    let allUsers = [];
+    let currentFilter = 'all';
+    let allEvents = [];
+    let allUsersForBooking = [];
+    let allTicketTypes = [];
+
+    // Tab switching
+    function showTab(tab) {
+      const sections = {
+        users: document.getElementById('usersSection'),
+        venues: document.getElementById('venuesSection'),
+        bookings: document.getElementById('bookingsSection'),
+        ticketTypes: document.getElementById('ticketTypesSection'),
+        events: document.getElementById('eventsSection'),
+        orders: document.getElementById('ordersSection')
+      };
+
+      const tabs = {
+        users: document.getElementById('usersTab'),
+        venues: document.getElementById('venuesTab'),
+        bookings: document.getElementById('bookingsTab'),
+        ticketTypes: document.getElementById('ticketTypesTab'),
+        events: document.getElementById('eventsTab'),
+        orders: document.getElementById('ordersTab')
+      };
+
+      // Hide all sections
+      Object.values(sections).forEach(s => {
+        if (s) {
+          s.classList.add('hidden');
+          s.classList.remove('flex');
+        }
+      });
+      
+      // Remove active styles from all tabs
+      Object.values(tabs).forEach(t => {
+        if (t) {
+          t.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+          t.classList.add('text-gray-600');
+        }
+      });
+
+      // Show selected section
+      if (sections[tab]) {
+        sections[tab].classList.remove('hidden');
+        sections[tab].classList.add('flex');
+        if (tabs[tab]) {
+          tabs[tab].classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+          tabs[tab].classList.remove('text-gray-600');
+        }
+      }
+
+      // Fetch data based on tab
+      if (tab === 'users') fetchUsers();
+      else if (tab === 'venues') fetchVenues();
+      else if (tab === 'bookings') loadEventsForBookings();
+      else if (tab === 'ticketTypes') loadTicketTypesTab();
+      else if (tab === 'events') fetchAllEvents();
+      else if (tab === 'orders') fetchAllOrders();
+    }
+
+    // Fetch users
+    async function fetchUsers() {
+      const tableBody = document.getElementById("userTableBody");
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 p-4">Loading users...</td></tr>`;
+
+      try {
+        const response = await axios.get(`${USERS_API}/getAllUsers`);
+        allUsers = response.data;
+        displayUsers(allUsers);
+      } catch (error) {
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-red-500 p-4">Error loading users</td></tr>`;
+      }
+    }
+
+    // Display users
+    function displayUsers(users) {
+      const tableBody = document.getElementById("userTableBody");
+      
+      if (!users.length) {
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 p-4">No users available.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = "";
+      users.forEach(user => {
+        const statusBadge = user.isActive 
+          ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">Active</span>'
+          : '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-sm">Inactive</span>';
+        
+        const roleBadge = user.role === 'ORGANIZER'
+          ? '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm">Organizer</span>'
+          : '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">Customer</span>';
+
+        const row = `
+          <tr class="border-b hover:bg-blue-50">
+            <td class="p-4">${user.userId}</td>
+            <td class="p-4">${user.username}</td>
+            <td class="p-4">${user.firstName} ${user.lastName}</td>
+            <td class="p-4">${user.email}</td>
+            <td class="p-4">${user.phoneNumber}</td>
+            <td class="p-4">${roleBadge}</td>
+            <td class="p-4">${statusBadge}</td>
+            <td class="p-4">
+              <button onclick="viewUser(${user.userId})" class="text-blue-600 hover:underline mr-3">View</button>
+              <button onclick="deleteUser(${user.userId}, '${user.username}')" class="text-red-600 hover:underline">Delete</button>
+            </td>
+          </tr>
+        `;
+        tableBody.insertAdjacentHTML("beforeend", row);
+      });
+    }
+
+    // Filter users
+    function filterUsers(role) {
+      currentFilter = role;
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'text-blue-600');
+        btn.classList.add('bg-gray-100', 'text-gray-600');
+      });
+      event.target.classList.add('bg-blue-100', 'text-blue-600');
+      event.target.classList.remove('bg-gray-100', 'text-gray-600');
+
+      if (role === 'all') {
+        displayUsers(allUsers);
+      } else {
+        const filtered = allUsers.filter(user => user.role === role);
+        displayUsers(filtered);
+      }
+    }
+
+    // View user details
+    async function viewUser(userId) {
+      try {
+        const response = await axios.get(`${USERS_API}/${userId}`);
+        const user = response.data;
+
+        Swal.fire({
+          title: 'User Details',
+          html: `
+            <div class="text-left space-y-2">
+              <p><strong>Username:</strong> ${user.username}</p>
+              <p><strong>Email:</strong> ${user.email}</p>
+              <p><strong>Name:</strong> ${user.firstName} ${user.lastName}</p>
+              <p><strong>Phone:</strong> ${user.phoneNumber}</p>
+              <p><strong>Role:</strong> ${user.role}</p>
+            </div>
+          `,
+          confirmButtonText: 'Close'
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to load user details.',
+        });
+      }
+    }
+
+    // Delete user
+    async function deleteUser(userId, username) {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `Delete user "${username}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`${USERS_API}/delete/${userId}`);
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: 'User has been deleted.',
+          });
+          
+          fetchUsers();
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data || 'Failed to delete user.',
+          });
+        }
+      }
+    }
+
+    // Fetch venues
+    async function fetchVenues() {
+      const tableBody = document.getElementById("venueTableBody");
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 p-4">Loading venues...</td></tr>`;
+
+      try {
+        const response = await axios.get(`${VENUES_API}/getVenues`);
+        const venues = response.data;
+
+        if (!venues.length) {
+          tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 p-4">No venues available.</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = "";
+        venues.forEach(venue => {
+          const row = `
+            <tr class="border-b hover:bg-blue-50">
+              <td class="p-4">${venue.venueId}</td>
+              <td class="p-4">${venue.venueName}</td>
+              <td class="p-4">${venue.venueAddress}</td>
+              <td class="p-4">${venue.city}</td>
+              <td class="p-4">${venue.totalCapacity}</td>
+              <td class="p-4">
+                <button onclick="editVenue(${venue.venueId})" class="text-blue-600 hover:underline mr-3">Edit</button>
+                <button onclick="deleteVenue(${venue.venueId}, '${venue.venueName}')" class="text-red-600 hover:underline">Delete</button>
+              </td>
+            </tr>
+          `;
+          tableBody.insertAdjacentHTML("beforeend", row);
+        });
+      } catch (error) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 p-4">Error loading venues</td></tr>`;
+      }
+    }
+
+    // Add venue form
+    async function openAddVenueForm() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Add Venue',
+        html: `
+          <div class="flex flex-col gap-3">
+            <input id="venueName" class="swal2-input" placeholder="Venue Name">
+            <input id="venueAddress" class="swal2-input" placeholder="Address">
+            <input id="venueCity" class="swal2-input" placeholder="City">
+            <input id="venueCapacity" type="number" class="swal2-input" placeholder="Total Capacity">
+          </div>
+        `,
+        confirmButtonText: 'Save Venue',
+        focusConfirm: false,
+        showCancelButton: true,
+        preConfirm: () => {
+          const name = document.getElementById('venueName').value.trim();
+          const address = document.getElementById('venueAddress').value.trim();
+          const city = document.getElementById('venueCity').value.trim();
+          const capacity = document.getElementById('venueCapacity').value.trim();
+
+          if (!name || !address || !city || !capacity) {
+            Swal.showValidationMessage('Please fill all required fields');
+            return false;
+          }
+          return { venueName: name, address, city, totalCapacity: parseInt(capacity) };
+        }
+      });
+
+      if (formValues) {
+        try {
+          Swal.fire({
+            title: 'Saving venue...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+          });
+
+          await axios.post(`${VENUES_API}/createVenue`, formValues);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Venue Added!',
+            text: `${formValues.venueName} created successfully.`,
+          });
+
+          fetchVenues();
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || 'Failed to save venue.',
+          });
+        }
+      }
+    }
+
+    // Edit venue
+    async function editVenue(venueId) {
+      try {
+        const response = await axios.get(`${VENUES_API}/${venueId}`);
+        const venue = response.data;
+
+        const { value: formValues } = await Swal.fire({
+          title: 'Edit Venue',
+          html: `
+            <div class="flex flex-col gap-3">
+              <input id="venueName" class="swal2-input" value="${venue.venueName}" placeholder="Venue Name">
+              <input id="venueAddress" class="swal2-input" value="${venue.venueAddress}" placeholder="Address">
+              <input id="venueCity" class="swal2-input" value="${venue.city}" placeholder="City">
+              <input id="venueCapacity" type="number" class="swal2-input" value="${venue.totalCapacity}" placeholder="Total Capacity">
+            </div>
+          `,
+          confirmButtonText: 'Update Venue',
+          focusConfirm: false,
+          showCancelButton: true,
+          preConfirm: () => {
+            const name = document.getElementById('venueName').value.trim();
+            const address = document.getElementById('venueAddress').value.trim();
+            const city = document.getElementById('venueCity').value.trim();
+            const capacity = document.getElementById('venueCapacity').value.trim();
+
+            if (!name || !address || !city || !capacity) {
+              Swal.showValidationMessage('Please fill all required fields');
+              return false;
+            }
+            return { venueId, venueName: name, address, city, totalCapacity: parseInt(capacity) };
+          }
+        });
+
+        if (formValues) {
+          Swal.fire({
+            title: 'Updating venue...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+          });
+
+          await axios.put(`${VENUES_API}/${venueId}`, formValues);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Venue Updated!',
+            text: `${formValues.venueName} updated successfully.`,
+          });
+
+          fetchVenues();
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to load venue details.',
+        });
+      }
+    }
+
+    // Delete venue
+    async function deleteVenue(venueId, venueName) {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `Delete venue "${venueName}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(`${VENUES_API}/${venueId}`);
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: 'Venue has been deleted.',
+          });
+          
+          fetchVenues();
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data || 'Failed to delete venue.',
+          });
+        }
+      }
+    }
+
+    // Load initial data
+    fetchUsers();
+
+    // Load all events for bookings dropdown
+    async function loadEventsForBookings() {
+      try {
+        const venues = await axios.get(`${VENUES_API}/getVenues`);
+        allEvents = [];
+        
+        for (const venue of venues.data) {
+          try {
+            const response = await axios.get(`${VENUES_API}/${venue.venueId}/events`);
+            allEvents = allEvents.concat(response.data);
+          } catch (err) {
+            console.log(`No events for venue ${venue.venueId}`);
+          }
+        }
+
+        const eventSelector = document.getElementById('eventSelector');
+        eventSelector.innerHTML = '<option value="">Select an event</option>';
+        
+        allEvents.forEach(event => {
+          const option = document.createElement('option');
