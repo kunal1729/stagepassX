@@ -15,15 +15,15 @@
       <nav class="flex flex-col gap-8">
         <div class="flex gap-4 items-center">
           <img src="dashboard.png" alt="dashboard" class="w-8 h-8 rounded-full">
-          <a href="bookings.html" class="text-[#414A4C] text-lg font-semibold">Dashboard</a>
+          <a href="bookings.html" class="text-[#414A4C] text-lg font-semibold hover:text-blue-600">Dashboard</a>
         </div>
         <div class="flex gap-4 items-center">
           <img src="events.png" alt="events" class="w-8 h-8 rounded-full">
-          <a href="events.html" class="text-[#414A4C] text-lg font-semibold">My Bookings</a>
+          <a href="events.html" class="text-[#414A4C] text-lg font-semibold hover:text-blue-600">My Bookings</a>
         </div>
         <div class="flex gap-4 items-center">
           <img src="profile.png" alt="profile" class="w-8 h-8 rounded-full">
-          <a href="#" class="text-[#414A4C] text-lg font-semibold">Profile</a>
+          <a href="#" class="text-[#414A4C] text-lg font-semibold hover:text-blue-600">Profile</a>
         </div>
       </nav>
 
@@ -81,7 +81,7 @@
   <script>
     const profileForm = document.getElementById('profileForm');
 
-    // Autofill form from localStorage
+    // ✅ Autofill form from localStorage
     const savedProfile = JSON.parse(localStorage.getItem('data'));
     if (savedProfile) {
       document.getElementById('userName').value = savedProfile.username || '';
@@ -90,28 +90,22 @@
       document.getElementById('email').value = savedProfile.email || '';
       document.getElementById('phoneNumber').value = savedProfile.phoneNumber || '';
       document.getElementById('role').value = savedProfile.role || '';
-    } else {
-      // Default values if nothing in localStorage
-      document.getElementById('userName').value = 'John Doe';
-      document.getElementById('firstName').value = 'John';
-      document.getElementById('lastName').value = 'Doe';
-      document.getElementById('email').value = 'john.doe@example.com';
-      document.getElementById('phoneNumber').value = '1234567890';
-      document.getElementById('role').value = 'Customer';
     }
 
-    profileForm.addEventListener('submit', async(e) => {
+    // ✅ Update Profile API call
+    profileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const profileData = {
-        username: document.getElementById('userName').value,
-        firstName: document.getElementById('firstName').value,
-        lastName: document.getElementById('lastName').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phoneNumber').value,
-        role: document.getElementById('role').value,
+        username: document.getElementById('userName').value.trim(),
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phoneNumber: document.getElementById('phoneNumber').value.trim(),
+        role: document.getElementById('role').value.trim(),
         isActive: true,
       };
-      console.log(profileData);
+
       try {
         const savedData = JSON.parse(localStorage.getItem('data'));
         const response = await axios.put(`http://localhost:9090/users/editUser/${savedData.userId}`, profileData, {
@@ -121,15 +115,24 @@
         });
         console.log('Profile updated on server:', response.data);
 
-        // Update localStorage
-        // localStorage.setItem('profileData', JSON.stringify(profileData));
+        // Update localStorage with new info
+        localStorage.setItem('data', JSON.stringify({ ...savedData, ...profileData }));
 
-        alert('Profile updated successfully!');
+        alert('✅ Profile updated successfully!');
       } catch (error) {
         console.error('Error updating profile:', error);
-        alert('Failed to update profile. Please try again.');
+        alert('❌ Failed to update profile. Please try again.');
       }
     });
+
+    // ✅ Logout Function
+    function handleLogout() {
+      if (confirm("Are you sure you want to log out?")) {
+        localStorage.removeItem('data');
+        localStorage.removeItem('token'); // if you store JWT
+        window.location.href = "login.html"; // redirect to login page
+      }
+    }
   </script>
 </body>
 </html>

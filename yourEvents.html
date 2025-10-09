@@ -360,148 +360,170 @@
     }
 
     // Edit event
-    async function editEvent(eventId) {
-      let venues = [];
-      let event = {};
-      
-      try {
-        Swal.fire({
-          title: 'Loading...',
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading(),
-        });
+async function editEvent(eventId) {
+  let venues = [];
 
-        const response = await axios.get(`${BASE_URL}/${eventId}`);
-        const event = response.data;
-        
-        // Format datetime for input
-        const formattedDateTime = new Date(event.eventDate).toISOString().slice(0, 16);
+  // Fetch all venues from backend
+  try {
+    const response = await axios.get("http://localhost:9090/api/venues/getVenues");
+    venues = response.data || [];
+    console.log(venues);
+  } catch (error) {
+    console.error("Error fetching venues:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Error!",
+      text: "Failed to fetch venues. Please try again.",
+      confirmButtonColor: "#3b82f6"
+    });
+    return;
+  }
 
-        const { value: formValues } = await Swal.fire({
-          title: 'Edit Event',
-          html: `
-            <div style="text-align: left; max-height: 500px; overflow-y: auto;">
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Name *</label>
-                <input id="eventName" class="swal2-input" value="${event.eventName}" style="width: 100%; margin: 0;">
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Description *</label>
-                <textarea id="description" class="swal2-textarea" style="width: 100%; margin: 0;">${event.description}</textarea>
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Category *</label>
-                <select id="category" class="swal2-input" style="width: 100%; margin: 0;">
-                  <option value="TECHNOLOGY" ${event.category === 'TECHNOLOGY' ? 'selected' : ''}>Technology</option>
-                  <option value="MUSIC" ${event.category === 'MUSIC' ? 'selected' : ''}>Music</option>
-                  <option value="SPORTS" ${event.category === 'SPORTS' ? 'selected' : ''}>Sports</option>
-                  <option value="ARTS" ${event.category === 'ARTS' ? 'selected' : ''}>Arts</option>
-                  <option value="BUSINESS" ${event.category === 'BUSINESS' ? 'selected' : ''}>Business</option>
-                  <option value="OTHER" ${event.category === 'OTHER' ? 'selected' : ''}>Other</option>
-                </select>
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Venue ID *</label>
-                <select id="venueId" class="swal2-input" style="width: 100%; margin: 0;">
-                  ${venueOptions}
-                </select>
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Date & Time *</label>
-                <input id="eventDate" type="datetime-local" class="swal2-input" value="${formattedDateTime}" style="width: 100%; margin: 0;">
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Banner Image URL</label>
-                <input id="bannerImageUrl" class="swal2-input" value="${event.bannerImageUrl || ''}" style="width: 100%; margin: 0;">
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Total Tickets Available *</label>
-                <input id="totalTickets" type="number" class="swal2-input" value="${event.totalTicketsAvailable}" style="width: 100%; margin: 0;">
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Tickets Sold</label>
-                <input id="ticketsSold" type="number" class="swal2-input" value="${event.ticketsSold}" style="width: 100%; margin: 0;">
-              </div>
-              <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Status *</label>
-                <select id="status" class="swal2-input" style="width: 100%; margin: 0;">
-                  <option value="UPCOMING" ${event.status === 'UPCOMING' ? 'selected' : ''}>Upcoming</option>
-                  <option value="ACTIVE" ${event.status === 'ACTIVE' ? 'selected' : ''}>Active</option>
-                  <option value="COMPLETED" ${event.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
-                  <option value="CANCELLED" ${event.status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
-                </select>
-              </div>
-            </div>
-          `,
-          confirmButtonText: 'Update Event',
-          confirmButtonColor: '#3b82f6',
-          focusConfirm: false,
-          showCancelButton: true,
-          width: '600px',
-          preConfirm: () => {
-            const eventName = document.getElementById('eventName').value.trim();
-            const description = document.getElementById('description').value.trim();
-            const category = document.getElementById('category').value;
-            const venueId = parseInt(document.getElementById('venueId').value);
-            const organizerId = parseInt(document.getElementById('organizerId').value);
-            const eventDate = document.getElementById('eventDate').value;
-            const bannerImageUrl = document.getElementById('bannerImageUrl').value.trim();
-            const totalTickets = parseInt(document.getElementById('totalTickets').value);
-            const ticketsSold = parseInt(document.getElementById('ticketsSold').value);
-            const status = document.getElementById('status').value;
+  // Generate dropdown options for venues
+  const venueOptions = venues
+    .map(v => `<option value="${v.venueId}">${v.venueName} - ${v.city}</option>`)
+    .join("");
 
-            if (!eventName || !description || !venueId || !organizerId || !eventDate || !totalTickets) {
-              Swal.showValidationMessage('Please fill all required fields');
-              return false;
-            }
+  try {
+    Swal.fire({
+      title: 'Loading...',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-            return {
-              eventName,
-              description,
-              category,
-              venue: { venueId },
-              organizer: { userId: organizerId },
-              eventDate: eventDate + ':00',
-              bannerImageUrl: bannerImageUrl || 'https://example.com/default-banner.jpg',
-              totalTicketsAvailable: totalTickets,
-              ticketsSold: ticketsSold,
-              status
-            };
-          }
-        });
+    const response = await axios.get(`${BASE_URL}/${eventId}`);
+    const event = response.data;
+    
+    Swal.close(); // close loading spinner
 
-        if (formValues) {
-          Swal.fire({
-            title: 'Updating event...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-          });
+    // Format datetime for input
+    const formattedDateTime = new Date(event.eventDate).toISOString().slice(0, 16);
 
-          await axios.put(`${BASE_URL}/${eventId}`, formValues, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          });
+    const { value: formValues } = await Swal.fire({
+      title: 'Edit Event',
+      html: `
+        <div style="text-align: left; max-height: 500px; overflow-y: auto;">
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Name *</label>
+            <input id="eventName" class="swal2-input" value="${event.eventName}" style="width: 100%; margin: 0;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Description *</label>
+            <textarea id="description" class="swal2-textarea" style="width: 100%; margin: 0;">${event.description || ''}</textarea>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Category *</label>
+            <select id="category" class="swal2-input" style="width: 100%; margin: 0;">
+              <option value="TECHNOLOGY" ${event.category === 'TECHNOLOGY' ? 'selected' : ''}>Technology</option>
+              <option value="MUSIC" ${event.category === 'MUSIC' ? 'selected' : ''}>Music</option>
+              <option value="SPORTS" ${event.category === 'SPORTS' ? 'selected' : ''}>Sports</option>
+              <option value="ARTS" ${event.category === 'ARTS' ? 'selected' : ''}>Arts</option>
+              <option value="BUSINESS" ${event.category === 'BUSINESS' ? 'selected' : ''}>Business</option>
+              <option value="OTHER" ${event.category === 'OTHER' ? 'selected' : ''}>Other</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Venue *</label>
+            <select id="venueId" class="swal2-input" style="width: 100%; margin: 0;">
+              ${venueOptions}
+            </select>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Event Date & Time *</label>
+            <input id="eventDate" type="datetime-local" class="swal2-input" value="${formattedDateTime}" style="width: 100%; margin: 0;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Banner Image URL</label>
+            <input id="bannerImageUrl" class="swal2-input" value="${event.bannerImageUrl || ''}" style="width: 100%; margin: 0;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Total Tickets Available *</label>
+            <input id="totalTickets" type="number" class="swal2-input" value="${event.totalTicketsAvailable}" style="width: 100%; margin: 0;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Tickets Sold</label>
+            <input id="ticketsSold" type="number" class="swal2-input" value="${event.ticketsSold}" style="width: 100%; margin: 0;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Status *</label>
+            <select id="status" class="swal2-input" style="width: 100%; margin: 0;">
+              <option value="UPCOMING" ${event.status === 'UPCOMING' ? 'selected' : ''}>Upcoming</option>
+              <option value="ACTIVE" ${event.status === 'ACTIVE' ? 'selected' : ''}>Active</option>
+              <option value="COMPLETED" ${event.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
+              <option value="CANCELLED" ${event.status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+            </select>
+          </div>
+        </div>
+      `,
+      confirmButtonText: 'Update Event',
+      confirmButtonColor: '#3b82f6',
+      focusConfirm: false,
+      showCancelButton: true,
+      width: '600px',
+      preConfirm: () => {
+        const eventName = document.getElementById('eventName').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const category = document.getElementById('category').value;
+        const venueId = parseInt(document.getElementById('venueId').value);
+        const eventDate = document.getElementById('eventDate').value;
+        const bannerImageUrl = document.getElementById('bannerImageUrl').value.trim();
+        const totalTickets = parseInt(document.getElementById('totalTickets').value);
+        const ticketsSold = parseInt(document.getElementById('ticketsSold').value);
+        const status = document.getElementById('status').value;
 
-          Swal.fire({
-            icon: 'success',
-            title: 'Event Updated!',
-            text: 'Event has been updated successfully.',
-            confirmButtonColor: '#3b82f6'
-          });
-
-          fetchEvents();
+        if (!eventName || !description || !venueId || !eventDate || !totalTickets) {
+          Swal.showValidationMessage('Please fill all required fields');
+          return false;
         }
-      } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: error.response?.data?.message || 'Failed to update event.',
-          confirmButtonColor: '#3b82f6'
-        });
+
+        return {
+          eventName,
+          description,
+          category,
+          venue: { venueId },
+          organizer: { userId: event.organizer?.userId || 1 },
+          eventDate: eventDate + ':00',
+          bannerImageUrl: bannerImageUrl || 'https://example.com/default-banner.jpg',
+          totalTicketsAvailable: totalTickets,
+          ticketsSold: ticketsSold,
+          status
+        };
       }
+    });
+
+    if (formValues) {
+      Swal.fire({
+        title: 'Updating event...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      await axios.put(`${BASE_URL}/${eventId}`, formValues, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Event Updated!',
+        text: 'Event has been updated successfully.',
+        confirmButtonColor: '#3b82f6'
+      });
+
+      fetchEvents();
     }
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.response?.data?.message || 'Failed to update event.',
+      confirmButtonColor: '#3b82f6'
+    });
+  }
+}
+
 
     // Delete event
     async function deleteEvent(eventId) {
